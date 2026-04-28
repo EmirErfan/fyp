@@ -2,7 +2,7 @@
 > *It was supposed to be a simple idea… and somehow it turned into this.*
 
 <p align="center">
-  <img src="C:\xampp\htdocs\stress-system\IMG-20260408-WA0017.jpg" width="200" style="border-radius: 50%;" />
+  <img src="assets/my-face.jpg" width="200" style="border-radius: 50%;" />
 </p>
 
 ---
