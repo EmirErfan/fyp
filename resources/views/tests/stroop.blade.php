@@ -73,33 +73,71 @@
             { name: 'YELLOW', value: 'yellow', hex: '#ffc107' }
         ];
 
-        let globalTimeRemaining = 60; // Set to 240 for 4 minutes
+        let globalTimeRemaining = 60; 
         let isPlaying = false;
         let currentInkColor = '';
         let wordStartTime = 0;
         
-        // Scoring
-        let totalAttempts = 0;
-        let correctAnswers = 0;
-        let totalErrors = 0;
-        let reactionTimes = [];
+        let totalAttempts = 0, correctAnswers = 0, totalErrors = 0, reactionTimes = [];
 
-        // WebRTC
-        let faceRecorder, screenRecorder;
-        let faceChunks = [], screenChunks = [];
+        let combinedRecorder;
+        let combinedChunks = [];
+        let animationId;
+        let faceStreamMain, screenStreamMain;
         const sessionId = {{ $testSession->id }};
+
+        // --- THE CSS TRICK ---
+        // Move them 10,000 pixels off the screen so the browser still fully renders them, but the user can't see them!
+        const stealthMode = "position:fixed; top:-10000px; left:-10000px; width:1920px; height:1080px;";
+
+        const faceVid = document.createElement('video');
+        faceVid.muted = true; faceVid.autoplay = true; faceVid.playsInline = true;
+        faceVid.style.cssText = stealthMode;
+        document.body.appendChild(faceVid);
+        
+        const screenVid = document.createElement('video');
+        screenVid.muted = true; screenVid.autoplay = true; screenVid.playsInline = true;
+        screenVid.style.cssText = stealthMode;
+        document.body.appendChild(screenVid);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 1920;  
+        canvas.height = 1080; 
+        canvas.style.cssText = stealthMode;
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
 
         async function startTest() {
             try {
-                const faceStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                faceRecorder = new MediaRecorder(faceStream);
-                faceRecorder.ondataavailable = e => faceChunks.push(e.data);
-                faceRecorder.start(1000);
+                faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
-                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                screenRecorder = new MediaRecorder(screenStream);
-                screenRecorder.ondataavailable = e => screenChunks.push(e.data);
-                screenRecorder.start(1000);
+                faceVid.srcObject = faceStreamMain;
+                screenVid.srcObject = screenStreamMain;
+
+                await faceVid.play().catch(e => console.log(e));
+                await screenVid.play().catch(e => console.log(e));
+
+                // Wait half a second before capturing to ensure cameras are fully on
+                setTimeout(() => {
+                    drawDualFrame();
+                    
+                    const combinedStream = canvas.captureStream(30);
+                    const audioTrack = faceStreamMain.getAudioTracks()[0];
+                    if (audioTrack) combinedStream.addTrack(audioTrack);
+
+                    let options = { mimeType: 'video/webm; codecs=vp8,opus' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options = { mimeType: 'video/webm' }; 
+                    }
+
+                    combinedRecorder = new MediaRecorder(combinedStream, options);
+                    combinedRecorder.ondataavailable = e => {
+                        if (e.data && e.data.size > 0) combinedChunks.push(e.data);
+                    };
+                    combinedRecorder.start(500); 
+                }, 500);
+
             } catch (err) {
                 alert("Camera/Screen Error. Permissions required."); return;
             }
@@ -122,8 +160,33 @@
             }, 1000);
         }
 
+        function drawDualFrame() {
+            if (!isPlaying) return;
+
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (faceVid.readyState >= 2) {
+                ctx.save();
+                ctx.translate(960, 0); 
+                ctx.scale(-1, 1); 
+                ctx.drawImage(faceVid, 0, 270, 960, 540);
+                ctx.restore();
+            }
+
+            if (screenVid.readyState >= 2) {
+                ctx.drawImage(screenVid, 960, 270, 960, 540);
+            }
+
+            ctx.fillStyle = "white";
+            ctx.font = "bold 30px Arial";
+            ctx.fillText("Participant Reaction", 50, 50);
+            ctx.fillText("Task Interface", 1010, 50);
+
+            animationId = requestAnimationFrame(drawDualFrame);
+        }
+
         function nextWord() {
-            // 50% chance of being congruent (matching) or incongruent (stressful)
             let textObj = colors[Math.floor(Math.random() * colors.length)];
             let colorObj = Math.random() > 0.5 ? textObj : colors[Math.floor(Math.random() * colors.length)];
             
@@ -131,19 +194,15 @@
             let display = document.getElementById('word-display');
             display.innerText = textObj.name;
             display.style.color = colorObj.hex;
-            
             wordStartTime = Date.now();
         }
 
         function checkAnswer(selectedColor) {
             if(!isPlaying) return;
-            
             totalAttempts++;
-            let reactionTime = Date.now() - wordStartTime;
-            reactionTimes.push(reactionTime);
+            reactionTimes.push(Date.now() - wordStartTime);
 
             let feedback = document.getElementById('feedback-message');
-            
             if (selectedColor === currentInkColor) {
                 correctAnswers++;
                 feedback.innerText = "Correct";
@@ -152,8 +211,6 @@
                 totalErrors++;
                 feedback.innerText = "WRONG";
                 feedback.style.color = "#dc3545";
-                
-                // Stressful screen shake on error
                 document.getElementById('test-area').animate([
                     { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0px)' }
                 ], { duration: 300 });
@@ -165,53 +222,68 @@
 
         function endTest() {
             isPlaying = false;
+            cancelAnimationFrame(animationId);
             
-            // 1. Safely stop the cameras
-            if (faceRecorder && faceRecorder.state !== 'inactive') faceRecorder.stop();
-            if (screenRecorder && screenRecorder.state !== 'inactive') screenRecorder.stop();
-
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('results-screen').style.display = 'block';
 
-            setTimeout(() => {
-                let formData = new FormData();
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            // When the recorder stops, IT triggers the upload. (No more random 3 second guessing!)
+            if (combinedRecorder && combinedRecorder.state !== 'inactive') {
+                combinedRecorder.onstop = () => {
+                    uploadVideo();
+                };
+                combinedRecorder.stop();
+            } else {
+                uploadVideo();
+            }
 
-                // 2. Safely package the videos
-                if(faceChunks.length > 0) formData.append('face_video', new Blob(faceChunks, { type: 'video/webm' }), 'face.webm');
-                if(screenChunks.length > 0) formData.append('screen_video', new Blob(screenChunks, { type: 'video/webm' }), 'screen.webm');
+            // Shut down cameras
+            if(faceStreamMain) faceStreamMain.getTracks().forEach(t => t.stop());
+            if(screenStreamMain) screenStreamMain.getTracks().forEach(t => t.stop());
+        }
 
-                // 3. Package the math/color scores
-                let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
-                let avgReaction = reactionTimes.length > 0 ? (reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length).toFixed(0) : 0;
+        function uploadVideo() {
+            let formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            if(combinedChunks.length > 0) {
+                let finalVideo = new Blob(combinedChunks, { type: 'video/webm' });
                 
-                formData.append('accuracy_rate', accuracy);
-                formData.append('total_error', totalErrors);
-                formData.append('average_reaction_time', avgReaction);
+                // Debug tool to see if the browser is still breaking the canvas
+                if(finalVideo.size === 0) {
+                    alert("FATAL ERROR: The video recorded 0 bytes. Please ensure the window remains maximized.");
+                }
 
-                // 4. Send to Laravel WITH our Error Trap!
-                fetch(`/test-sessions/${sessionId}/recordings`, { 
-                    method: 'POST', 
-                    body: formData 
-                })
-                .then(async (res) => {
-                    if (!res.ok) {
-                        let err = await res.text();
-                        alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
-                    } else {
-                        // SUCCESS: Close this dedicated window automatically!
-                        window.close();
-                        
-                        // Fallback message just in case their browser has strict popup blockers
-                        document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window and return to the main screen.</p>";
-                    }
-                })
-                .catch(err => {
-                    alert("NETWORK ERROR: " + err);
-                    window.location.href = `/test-sessions/${sessionId}/post-test`;
-                });
-            }, 3000);
+                // Append the SAME video twice to satisfy Laravel's strict check
+                formData.append('face_video', finalVideo, 'combined_face.webm');
+                formData.append('screen_video', finalVideo, 'combined_screen.webm');
+            }
+
+            let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
+            let avgReaction = reactionTimes.length > 0 ? (reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length).toFixed(0) : 0;
+            
+            formData.append('accuracy_rate', accuracy);
+            formData.append('total_error', totalErrors);
+            formData.append('average_reaction_time', avgReaction);
+
+            fetch(`/test-sessions/${sessionId}/recordings`, { 
+                method: 'POST', 
+                body: formData 
+            })
+            .then(async (res) => {
+                if (!res.ok) {
+                    let err = await res.text();
+                    alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
+                } else {
+                    window.close();
+                    document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window.</p>";
+                }
+            })
+            .catch(err => {
+                alert("NETWORK ERROR: " + err);
+            });
         }
     </script>
+
 </body>
 </html>

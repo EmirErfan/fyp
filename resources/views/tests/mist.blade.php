@@ -83,9 +83,11 @@
         let totalErrors = 0;
         let reactionTimes = [];
 
-        // WebRTC
-        let faceRecorder, screenRecorder;
-        let faceChunks = [], screenChunks = [];
+        // --- DUAL-RECORDING ENGINE VARIABLES ---
+        let combinedRecorder;
+        let combinedChunks = [];
+        let animationId;
+        let faceStreamMain, screenStreamMain;
         const sessionId = {{ $testSession->id }};
 
         const answerInput = document.getElementById('answer-input');
@@ -96,17 +98,57 @@
             }
         });
 
+        // --- THE CSS TRICK ---
+        const stealthMode = "position:fixed; top:-10000px; left:-10000px; width:1920px; height:1080px;";
+
+        const faceVid = document.createElement('video');
+        faceVid.muted = true; faceVid.autoplay = true; faceVid.playsInline = true;
+        faceVid.style.cssText = stealthMode;
+        document.body.appendChild(faceVid);
+        
+        const screenVid = document.createElement('video');
+        screenVid.muted = true; screenVid.autoplay = true; screenVid.playsInline = true;
+        screenVid.style.cssText = stealthMode;
+        document.body.appendChild(screenVid);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 1920;  
+        canvas.height = 1080; 
+        canvas.style.cssText = stealthMode;
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
         async function startTest() {
             try {
-                const faceStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                faceRecorder = new MediaRecorder(faceStream);
-                faceRecorder.ondataavailable = e => faceChunks.push(e.data);
-                faceRecorder.start(1000);
+                faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
-                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                screenRecorder = new MediaRecorder(screenStream);
-                screenRecorder.ondataavailable = e => screenChunks.push(e.data);
-                screenRecorder.start(1000);
+                faceVid.srcObject = faceStreamMain;
+                screenVid.srcObject = screenStreamMain;
+
+                await faceVid.play().catch(e => console.log(e));
+                await screenVid.play().catch(e => console.log(e));
+
+                // Wait half a second for streams to stabilize
+                setTimeout(() => {
+                    drawDualFrame();
+                    
+                    const combinedStream = canvas.captureStream(30);
+                    const audioTrack = faceStreamMain.getAudioTracks()[0];
+                    if (audioTrack) combinedStream.addTrack(audioTrack);
+
+                    let options = { mimeType: 'video/webm; codecs=vp8,opus' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options = { mimeType: 'video/webm' }; 
+                    }
+
+                    combinedRecorder = new MediaRecorder(combinedStream, options);
+                    combinedRecorder.ondataavailable = e => {
+                        if (e.data && e.data.size > 0) combinedChunks.push(e.data);
+                    };
+                    combinedRecorder.start(500); 
+                }, 500);
+
             } catch (err) {
                 alert("Camera/Screen Error. Permissions required."); return;
             }
@@ -130,12 +172,38 @@
             }, 1000);
         }
 
+        // --- STITCHING LOGIC ---
+        function drawDualFrame() {
+            if (!isPlaying) return;
+
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (faceVid.readyState >= 2) {
+                ctx.save();
+                ctx.translate(960, 0); 
+                ctx.scale(-1, 1); 
+                ctx.drawImage(faceVid, 0, 270, 960, 540);
+                ctx.restore();
+            }
+
+            if (screenVid.readyState >= 2) {
+                ctx.drawImage(screenVid, 960, 270, 960, 540);
+            }
+
+            ctx.fillStyle = "white";
+            ctx.font = "bold 30px Arial";
+            ctx.fillText("Participant Reaction", 50, 50);
+            ctx.fillText("Task Interface", 1010, 50);
+
+            animationId = requestAnimationFrame(drawDualFrame);
+        }
+
         // --- PROGRESSIVE DIFFICULTY ENGINE ---
         function generateEquation() {
             let equationStr = "";
             
             if (globalTimeRemaining > 120) {
-                // MINUTE 1: EASY (Basic Addition/Subtraction)
                 let a = Math.floor(Math.random() * 20) + 5;
                 let b = Math.floor(Math.random() * 15) + 1;
                 
@@ -149,10 +217,9 @@
                 }
 
             } else if (globalTimeRemaining > 60) {
-                // MINUTE 2: MEDIUM (Combo of Add/Sub and Multiplication)
-                let a = Math.floor(Math.random() * 9) + 2; // single digit
-                let b = Math.floor(Math.random() * 9) + 2; // single digit
-                let c = Math.floor(Math.random() * 20) + 1; // double digit
+                let a = Math.floor(Math.random() * 9) + 2; 
+                let b = Math.floor(Math.random() * 9) + 2; 
+                let c = Math.floor(Math.random() * 20) + 1; 
                 
                 if (Math.random() > 0.5) {
                     expectedAnswer = a * b + c;
@@ -163,10 +230,9 @@
                 }
 
             } else {
-                // MINUTE 3: IMPOSSIBLE (Huge numbers to induce failure)
-                let a = Math.floor(Math.random() * 80) + 15; // 15 to 94
-                let b = Math.floor(Math.random() * 60) + 12; // 12 to 71
-                let c = Math.floor(Math.random() * 500) + 100; // 100 to 599
+                let a = Math.floor(Math.random() * 80) + 15; 
+                let b = Math.floor(Math.random() * 60) + 12; 
+                let c = Math.floor(Math.random() * 500) + 100; 
                 
                 if (Math.random() > 0.5) {
                     expectedAnswer = a * b + c;
@@ -186,7 +252,7 @@
             
             totalAttempts++;
             let userAnswer = parseInt(answerInput.value);
-            let reactionTime = (Date.now() - questionStartTime) / 1000; // In seconds
+            let reactionTime = (Date.now() - questionStartTime) / 1000; 
             reactionTimes.push(reactionTime);
 
             let feedback = document.getElementById('feedback-message');
@@ -200,7 +266,6 @@
                 feedback.innerText = "Incorrect";
                 feedback.style.color = "#dc3545";
                 
-                // Shake screen on error
                 document.getElementById('test-area').animate([
                     { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0px)' }
                 ], { duration: 300 });
@@ -215,33 +280,24 @@
         }
 
         function updateFakePeerPressure() {
-            // 1. Calculate actual user average time
             let userAvgRaw = reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length;
-            
-            // If they are answering impossibly fast by guessing, cap the minimum average so it looks realistic
             let userAvg = Math.max(1.5, userAvgRaw); 
 
-            // 2. Calculate the FAKE peer average time. 
-            // The peer is ALWAYS roughly 40% faster than the user, making them impossible to beat.
             let fakePeerAvg = userAvg * 0.60; 
             
-            // In the "Impossible" 3rd minute, make the fake peer seem like geniuses answering in 2 seconds
             if(globalTimeRemaining <= 60 && fakePeerAvg > 2.5) {
                 fakePeerAvg = 2.1 + (Math.random() * 0.4); 
             }
 
-            // 3. Update the UI Text
             document.getElementById('user-time-text').innerText = userAvg.toFixed(1) + "s";
             document.getElementById('peer-time-text').innerText = fakePeerAvg.toFixed(1) + "s";
 
-            // 4. Update the Bars (Scale of 0 to 10 seconds. Longer bar = Slower = Bad)
             let userBarWidth = Math.min(100, (userAvg / 10) * 100);
             let peerBarWidth = Math.min(100, (fakePeerAvg / 10) * 100);
 
             document.getElementById('user-bar-fill').style.width = userBarWidth + "%";
             document.getElementById('peer-bar-fill').style.width = peerBarWidth + "%";
 
-            // 5. Update the stressful warning text
             let warningText = document.getElementById('stress-warning');
             let difference = (userAvg - fakePeerAvg).toFixed(1);
             warningText.innerText = `Performance Warning: You are ${difference}s slower than the required peer baseline.`;
@@ -249,48 +305,63 @@
 
         function endTest() {
             isPlaying = false;
+            cancelAnimationFrame(animationId);
             
-            if (faceRecorder && faceRecorder.state !== 'inactive') faceRecorder.stop();
-            if (screenRecorder && screenRecorder.state !== 'inactive') screenRecorder.stop();
-
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('results-screen').style.display = 'block';
 
-            setTimeout(() => {
-                let formData = new FormData();
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            if (combinedRecorder && combinedRecorder.state !== 'inactive') {
+                combinedRecorder.onstop = () => {
+                    uploadVideo();
+                };
+                combinedRecorder.stop();
+            } else {
+                uploadVideo();
+            }
 
-                if(faceChunks.length > 0) formData.append('face_video', new Blob(faceChunks, { type: 'video/webm' }), 'face.webm');
-                if(screenChunks.length > 0) formData.append('screen_video', new Blob(screenChunks, { type: 'video/webm' }), 'screen.webm');
+            if(faceStreamMain) faceStreamMain.getTracks().forEach(t => t.stop());
+            if(screenStreamMain) screenStreamMain.getTracks().forEach(t => t.stop());
+        }
 
-                let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
-                let avgReactionMs = reactionTimes.length > 0 ? ((reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length) * 1000).toFixed(0) : 0;
+        function uploadVideo() {
+            let formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            if(combinedChunks.length > 0) {
+                let finalVideo = new Blob(combinedChunks, { type: 'video/webm' });
                 
-                formData.append('accuracy_rate', accuracy);
-                formData.append('total_error', totalErrors);
-                formData.append('average_reaction_time', avgReactionMs);
+                if(finalVideo.size === 0) {
+                    alert("FATAL ERROR: The video recorded 0 bytes. Please ensure the window remains maximized.");
+                }
 
-                fetch(`/test-sessions/${sessionId}/recordings`, { 
-                    method: 'POST', 
-                    body: formData 
-                })
-                .then(async (res) => {
-                    if (!res.ok) {
-                        let err = await res.text();
-                        alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
-                    } else {
-                        // SUCCESS: Close this dedicated window automatically!
-                        window.close();
-                        
-                        // Fallback message just in case their browser has strict popup blockers
-                        document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window and return to the main screen.</p>";
-                    }
-                })
-                .catch(err => {
-                    alert("NETWORK ERROR: " + err);
-                    window.location.href = `/test-sessions/${sessionId}/post-test`;
-                });
-            }, 3000);
+                formData.append('face_video', finalVideo, 'combined_face.webm');
+                formData.append('screen_video', finalVideo, 'combined_screen.webm');
+            }
+
+            let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
+            // MIST originally converts the average reaction time to milliseconds before saving
+            let avgReactionMs = reactionTimes.length > 0 ? ((reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length) * 1000).toFixed(0) : 0;
+            
+            formData.append('accuracy_rate', accuracy);
+            formData.append('total_error', totalErrors);
+            formData.append('average_reaction_time', avgReactionMs);
+
+            fetch(`/test-sessions/${sessionId}/recordings`, { 
+                method: 'POST', 
+                body: formData 
+            })
+            .then(async (res) => {
+                if (!res.ok) {
+                    let err = await res.text();
+                    alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
+                } else {
+                    window.close();
+                    document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window.</p>";
+                }
+            })
+            .catch(err => {
+                alert("NETWORK ERROR: " + err);
+            });
         }
     </script>
 </body>

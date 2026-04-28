@@ -111,11 +111,6 @@
         let globalTimeRemaining = 60; 
         let idleTimer; 
         
-        // --- WEBRTC RECORDING VARIABLES ---
-        let faceRecorder, screenRecorder;
-        let faceChunks = [], screenChunks = [];
-        const sessionId = {{ $testSession->id }};
-        
         // --- MATH LOGIC SETTINGS ---
         const STARTING_NUMBER = Math.floor(Math.random() * 9000) + 1000;
         const SUBTRACTION_STEP = 13;
@@ -133,6 +128,13 @@
         let totalErrors = 0;
         let lowestNumberReached = STARTING_NUMBER; 
 
+        // --- DUAL-RECORDING ENGINE VARIABLES ---
+        let combinedRecorder;
+        let combinedChunks = [];
+        let animationId;
+        let faceStreamMain, screenStreamMain;
+        const sessionId = {{ $testSession->id }};
+
         const answerInput = document.getElementById('answer-input');
         const feedbackMsg = document.getElementById('feedback-message');
         const numberDisplay = document.getElementById('number-display');
@@ -144,6 +146,26 @@
                 checkAnswer();
             }
         });
+
+        // --- THE CSS TRICK ---
+        const stealthMode = "position:fixed; top:-10000px; left:-10000px; width:1920px; height:1080px;";
+
+        const faceVid = document.createElement('video');
+        faceVid.muted = true; faceVid.autoplay = true; faceVid.playsInline = true;
+        faceVid.style.cssText = stealthMode;
+        document.body.appendChild(faceVid);
+        
+        const screenVid = document.createElement('video');
+        screenVid.muted = true; screenVid.autoplay = true; screenVid.playsInline = true;
+        screenVid.style.cssText = stealthMode;
+        document.body.appendChild(screenVid);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 1920;  
+        canvas.height = 1080; 
+        canvas.style.cssText = stealthMode;
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
 
         // The Harsh Idle Timer Function
         function resetIdleTimer() {
@@ -158,30 +180,45 @@
 
         async function startTest() {
             try {
-                // Check if browser is secure
                 if (!navigator.mediaDevices) {
                     throw new Error("Your browser is blocking camera access. Ensure you are using http://127.0.0.1:8000");
                 }
 
-                // 1. Request Webcam Permission
-                const faceStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                faceRecorder = new MediaRecorder(faceStream);
-                faceRecorder.ondataavailable = e => faceChunks.push(e.data);
-                faceRecorder.start(1000);
+                faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
-                // 2. Request Screen Share Permission
-                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                screenRecorder = new MediaRecorder(screenStream);
-                screenRecorder.ondataavailable = e => screenChunks.push(e.data);
-                screenRecorder.start(1000);
+                faceVid.srcObject = faceStreamMain;
+                screenVid.srcObject = screenStreamMain;
+
+                await faceVid.play().catch(e => console.log(e));
+                await screenVid.play().catch(e => console.log(e));
+
+                // Wait half a second for streams to stabilize
+                setTimeout(() => {
+                    drawDualFrame();
+                    
+                    const combinedStream = canvas.captureStream(30);
+                    const audioTrack = faceStreamMain.getAudioTracks()[0];
+                    if (audioTrack) combinedStream.addTrack(audioTrack);
+
+                    let options = { mimeType: 'video/webm; codecs=vp8,opus' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options = { mimeType: 'video/webm' }; 
+                    }
+
+                    combinedRecorder = new MediaRecorder(combinedStream, options);
+                    combinedRecorder.ondataavailable = e => {
+                        if (e.data && e.data.size > 0) combinedChunks.push(e.data);
+                    };
+                    combinedRecorder.start(500); 
+                }, 500);
                 
             } catch (err) {
                 console.error(err);
                 alert("Camera/Screen Error: " + err.message + "\n\nYou MUST allow permissions to begin the test.");
-                return; // Stops the test if they deny permissions!
+                return; 
             }
 
-            // If permissions are granted, start the game UI!
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
             answerInput.disabled = false;
@@ -206,6 +243,33 @@
                     endTest();
                 }
             }, 1000);
+        }
+
+        // --- STITCHING LOGIC ---
+        function drawDualFrame() {
+            if (!isPlaying) return;
+
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (faceVid.readyState >= 2) {
+                ctx.save();
+                ctx.translate(960, 0); 
+                ctx.scale(-1, 1); 
+                ctx.drawImage(faceVid, 0, 270, 960, 540);
+                ctx.restore();
+            }
+
+            if (screenVid.readyState >= 2) {
+                ctx.drawImage(screenVid, 960, 270, 960, 540);
+            }
+
+            ctx.fillStyle = "white";
+            ctx.font = "bold 30px Arial";
+            ctx.fillText("Participant Reaction", 50, 50);
+            ctx.fillText("Task Interface", 1010, 50);
+
+            animationId = requestAnimationFrame(drawDualFrame);
         }
 
         function checkAnswer() {
@@ -270,57 +334,61 @@
         function endTest() {
             isPlaying = false;
             clearInterval(idleTimer); 
+            cancelAnimationFrame(animationId);
             
-            // --- STOP RECORDING ---
-            if (faceRecorder && faceRecorder.state !== 'inactive') faceRecorder.stop();
-            if (screenRecorder && screenRecorder.state !== 'inactive') screenRecorder.stop();
-
-            // Transition UI to the Loading State
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('results-screen').style.display = 'block';
 
-            // --- THE 3-SECOND BUFFER & AUTO-SAVE UPLOAD ---
-            setTimeout(() => {
-                let formData = new FormData();
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            if (combinedRecorder && combinedRecorder.state !== 'inactive') {
+                combinedRecorder.onstop = () => {
+                    uploadVideo();
+                };
+                combinedRecorder.stop();
+            } else {
+                uploadVideo();
+            }
 
-                // 1. Package the Video Blobs
-                if(faceChunks.length > 0) {
-                    formData.append('face_video', new Blob(faceChunks, { type: 'video/webm' }), 'face.webm');
+            if(faceStreamMain) faceStreamMain.getTracks().forEach(t => t.stop());
+            if(screenStreamMain) screenStreamMain.getTracks().forEach(t => t.stop());
+        }
+
+        function uploadVideo() {
+            let formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            if(combinedChunks.length > 0) {
+                let finalVideo = new Blob(combinedChunks, { type: 'video/webm' });
+                
+                if(finalVideo.size === 0) {
+                    alert("FATAL ERROR: The video recorded 0 bytes. Please ensure the window remains maximized.");
                 }
-                if(screenChunks.length > 0) {
-                    formData.append('screen_video', new Blob(screenChunks, { type: 'video/webm' }), 'screen.webm');
+
+                formData.append('face_video', finalVideo, 'combined_face.webm');
+                formData.append('screen_video', finalVideo, 'combined_screen.webm');
+            }
+
+            let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
+            
+            formData.append('accuracy_rate', accuracy);
+            formData.append('total_error', totalErrors); // Ensures it matches your DB schema
+            formData.append('average_reaction_time', 0); // TSST doesn't use reaction time, pass 0 so the controller doesn't crash
+
+            fetch(`/test-sessions/${sessionId}/recordings`, { 
+                method: 'POST', 
+                body: formData 
+            })
+            .then(async (res) => {
+                if (!res.ok) {
+                    let err = await res.text();
+                    alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
+                } else {
+                    window.close();
+                    document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window.</p>";
                 }
-
-                // 2. Package the Math Scores!
-                let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
-                formData.append('accuracy_rate', accuracy);
-                formData.append('total_errors', totalErrors);
-
-                // 3. Send to Laravel securely
-                fetch(`/test-sessions/${sessionId}/recordings`, { 
-                    method: 'POST', 
-                    body: formData 
-                })
-                .then(async (res) => {
-                    if (!res.ok) {
-                        let err = await res.text();
-                        alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
-                    } else {
-                        // SUCCESS: Close this dedicated window automatically!
-                        window.close();
-                        
-                        // Fallback message just in case their browser has strict popup blockers
-                        document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window and return to the main screen.</p>";
-                    }
-                })
-                .catch(err => {
-                    alert("NETWORK ERROR: Server disconnected or offline.\n" + err);
-                    // Fallback redirect just in case
-                    window.location.href = `/test-sessions/${sessionId}/post-test`;
-                });
-
-            }, 3000); // Wait exactly 3 seconds for browsers to finish compiling video data
+            })
+            .catch(err => {
+                alert("NETWORK ERROR: " + err);
+            });
         }
     </script>
 </body>
