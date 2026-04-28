@@ -10,12 +10,12 @@ class Result extends Model
     use HasFactory;
 
     protected $fillable = [
-        'test_session_id', 
-        'accuracy_rate', 
-        'average_reaction_time', 
-        'total_error', 
-        'face_video_path', 
-        'screen_video_path'
+        'test_session_id',
+        'accuracy_rate',
+        'total_error',
+        'average_reaction_time',
+        'face_video_path',   
+        'screen_video_path', 
     ];
 
     // This Result belongs to ONE specific Test Session

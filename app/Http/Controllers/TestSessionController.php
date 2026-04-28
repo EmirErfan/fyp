@@ -93,41 +93,42 @@ class TestSessionController extends Controller
 
     public function storeRecordings(Request $request, $id)
     {
-        // 1. Strict Check
-        if (!$request->hasFile('face_video') && !$request->hasFile('screen_video')) {
-            return response()->json(['status' => 'error', 'message' => 'Files missing.'], 400);
-        }
+        try {
+            // 1. Check for the video
+            if (!$request->hasFile('face_video')) {
+                return response()->json(['status' => 'error', 'message' => 'Video missing.'], 400);
+            }
 
-        $destinationPath = storage_path('app/public/recordings');
-        $facePath = null;
-        $screenPath = null;
-
-        // 2. Force move the videos & save their paths
-        if ($request->hasFile('face_video')) {
-            $filename = "session_{$id}_face.webm";
+            $destinationPath = storage_path('app/public/recordings');
+            
+            // 2. Process and save the single file
+            $filename = "session_{$id}_combined.webm";
             $request->file('face_video')->move($destinationPath, $filename);
-            $facePath = 'storage/recordings/' . $filename;
-        }
-        
-        if ($request->hasFile('screen_video')) {
-            $filename = "session_{$id}_screen.webm";
-            $request->file('screen_video')->move($destinationPath, $filename);
-            $screenPath = 'storage/recordings/' . $filename;
-        }
+            $videoPath = 'recordings/' . $filename; 
 
-        // 3. AUTO-SAVE THE RESULTS TO THE DATABASE!
-        // This completely eliminates the need for the manual entry form.
-        \App\Models\Result::updateOrCreate(
-            ['test_session_id' => $id],
-            [
-                'accuracy_rate' => $request->input('accuracy_rate', 0),
-                'total_error' => $request->input('total_errors', 0),
-                'average_reaction_time' => $request->input('average_reaction_time', 0),
-                'face_recording_link' => $facePath, // Saves the local file path!
-                'screen_recording_link' => $screenPath,
-            ]
-        );
+            // 3. AUTO-SAVE THE RESULTS TO THE DATABASE!
+            \App\Models\Result::updateOrCreate(
+                ['test_session_id' => $id],
+                [
+                    'accuracy_rate' => $request->input('accuracy_rate') ?? 0,
+                    'total_error' => $request->input('total_error') ?? $request->input('total_errors') ?? 0,
+                    'average_reaction_time' => $request->input('average_reaction_time') ?? 0,
+                    
+                    // Changed to match your database schema!
+                    'face_video_path' => $videoPath, 
+                    'screen_video_path' => $videoPath,
+                ]
+            );
 
-        return response()->json(['status' => 'success', 'message' => 'Recordings and Results Auto-Saved!']);
+            return response()->json(['status' => 'success', 'message' => 'Recordings and Results Auto-Saved!']);
+
+        } catch (\Exception $e) {
+            // THIS IS THE MAGIC TRICK:
+            // If the database crashes, this catches it and sends the EXACT error message to your screen!
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'DATABASE CRASH: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -15,13 +15,12 @@
         .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px; margin-bottom: 30px; }
         .card-title { font-size: 22px; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px; color: #333; }
 
-        /* Upgraded Grid for 3 Stats */
+        /* Grid for Stats */
         .stat-grid { display: flex; gap: 20px; text-align: center; }
         .stat-box { flex: 1; background: #f8f9fa; padding: 25px 15px; border-radius: 8px; border: 1px solid #e9ecef; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .stat-number { font-size: 38px; font-weight: 900; margin-bottom: 5px; }
         .stat-label { font-size: 14px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;}
 
-        /* Colors for different metrics */
         .text-primary { color: #0d6efd; }
         .text-danger { color: #dc3545; }
         .text-warning { color: #fd7e14; }
@@ -63,29 +62,45 @@
     <div class="card">
         <div class="card-title">{{ $testName }} Performance Data</div>
         <div class="stat-grid">
-            
             <div class="stat-box">
                 <div class="stat-number text-primary">
                     {{ number_format($session->result->accuracy_rate ?? 0, 1) }}%
                 </div>
                 <div class="stat-label">{{ $accuracyLabel }}</div>
             </div>
-
             <div class="stat-box">
                 <div class="stat-number text-danger">
                     {{ $session->result->total_error ?? 0 }}
                 </div>
                 <div class="stat-label">Total Errors Made</div>
             </div>
-
             <div class="stat-box">
                 <div class="stat-number text-warning">
                     {{ number_format($session->result->average_reaction_time ?? 0, 0) }} ms
                 </div>
                 <div class="stat-label">Avg Reaction Time</div>
             </div>
-
         </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Dual-Recording Evidence</div>
+        
+        @if(isset($session->result) && $session->result->face_video_path)
+            <div style="background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <video width="100%" controls preload="metadata" style="display: block;">
+                    <source src="{{ asset('storage/' . $session->result->face_video_path) }}" type="video/webm">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 14px; margin-top: 15px;">
+                Synchronized Participant Reaction and Screen Capture
+            </p>
+        @else
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; text-align: center; color: #6c757d; border: 1px dashed #ccc;">
+                <i>No video recording found for this session.</i>
+            </div>
+        @endif
     </div>
 
     <div class="card">
