@@ -1,0 +1,20 @@
+UPDATE CODE
+
+git status
+git add . @ git file name
+git commit -m 'message'
+git push
+
+GO BACK
+
+git log --oneline
+
+Option A (Just look at old code)
+git checkout xxxxxxx
+
+Option B (Undo last commit but keep the file)
+git revert HEAD
+
+Option C (Reset to a specific commit)
+git reset --hard xxxxxxx
+git push --force
