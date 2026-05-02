@@ -82,6 +82,8 @@
         let correctAnswers = 0;
         let totalErrors = 0;
         let reactionTimes = [];
+        let consecutiveCorrect = 0;
+        let consecutiveErrors = 0;
 
         // --- DUAL-RECORDING ENGINE VARIABLES ---
         let combinedRecorder;
@@ -89,6 +91,44 @@
         let animationId;
         let faceStreamMain, screenStreamMain;
         const sessionId = {{ $testSession->id }};
+
+        // --- AUDIO FEEDBACK SETUP ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
 
         const answerInput = document.getElementById('answer-input');
         answerInput.addEventListener("keypress", function(event) {
@@ -259,12 +299,30 @@
             
             if (userAnswer === expectedAnswer) {
                 correctAnswers++;
-                feedback.innerText = "Correct";
-                feedback.style.color = "#198754";
+                consecutiveCorrect++;
+                consecutiveErrors = 0;
+                playSound('correct');
+
+                if (consecutiveCorrect >= 3) {
+                    feedback.innerText = "Outstanding precision! Keep the momentum.";
+                    feedback.style.color = "#20c997";
+                } else {
+                    feedback.innerText = "Correct";
+                    feedback.style.color = "#198754";
+                }
             } else {
                 totalErrors++;
-                feedback.innerText = "Incorrect";
-                feedback.style.color = "#dc3545";
+                consecutiveErrors++;
+                consecutiveCorrect = 0;
+                playSound('incorrect');
+
+                if (consecutiveErrors >= 3) {
+                    feedback.innerText = "Warning: Accuracy dropping significantly. Focus!";
+                    feedback.style.color = "#ff4d4d";
+                } else {
+                    feedback.innerText = "Incorrect";
+                    feedback.style.color = "#dc3545";
+                }
                 
                 document.getElementById('test-area').animate([
                     { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0px)' }
@@ -273,7 +331,7 @@
 
             updateFakePeerPressure();
 
-            setTimeout(() => { if(feedback.innerText !== "") feedback.innerText = ""; }, 1000);
+            setTimeout(() => { if(feedback.innerText !== "") feedback.innerText = ""; }, 1500);
             
             answerInput.value = '';
             generateEquation();
