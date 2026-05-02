@@ -23,10 +23,10 @@ Ensure you have the following installed:
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+git clone https://github.com/EmirErfan/fyp.git
 
 # Navigate to the directory
-cd your-repo-name
+cd fyp
 
 # Install PHP dependencies
 composer install
