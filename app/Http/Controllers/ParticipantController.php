@@ -8,11 +8,17 @@ use App\Models\Participant; // Import the Participant Model!
 class ParticipantController extends Controller
 {
     // Shows the list of participants
-    public function index()
+    public function index(Request $request)
     {
-        // Get all participants from the database
-        $participants = Participant::all(); 
-        
+        $search = $request->input('search');
+
+        $participants = \App\Models\Participant::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('id', 'like', "%{$search}%");
+        })
+        ->orderBy('name', 'asc')
+        ->get();
+
         return view('participants.index', compact('participants'));
     }
 

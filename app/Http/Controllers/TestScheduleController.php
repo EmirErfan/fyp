@@ -7,9 +7,17 @@ use App\Models\TestSchedule;
 
 class TestScheduleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $schedules = TestSchedule::orderBy('date', 'asc')->get();
+        $search = $request->input('search');
+
+        $schedules = \App\Models\TestSchedule::when($search, function ($query, $search) {
+            $query->where('date', 'like', "%{$search}%")
+                ->orWhere('time', 'like', "%{$search}%");
+        })
+        ->orderBy('date', 'asc')
+        ->get();
+
         return view('schedules.index', compact('schedules'));
     }
 

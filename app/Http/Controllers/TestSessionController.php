@@ -13,15 +13,26 @@ class TestSessionController extends Controller
 {
 
     // Shows the list of all assigned sessions (The Dashboard)
-    public function index()
+    public function index(Request $request)
     {
-        // We use whereHas to check the date inside the connected TestSchedule table!
+        $search = $request->input('search');
+
         $testSessions = TestSession::whereHas('testSchedule', function ($query) {
             $query->whereDate('date', '>=', now()->toDateString());
         })
+        ->when($search, function ($query, $search) {
+            // Look into the related participant's name
+            $query->whereHas('participant', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            // Or look into the related test type
+            ->orWhereHas('test', function ($q) use ($search) {
+                $q->where('test_type', 'like', "%{$search}%");
+            });
+        })
         ->get()
         ->sortBy(function ($session) {
-            return $session->testSchedule->date; // Sorts them by the schedule date
+            return $session->testSchedule->date; //[cite: 3]
         });
 
         return view('test_sessions.index', compact('testSessions'));

@@ -1,49 +1,48 @@
-# 👨‍💻 My Final Year Project (FYP)
-> *It was supposed to be a simple idea… and somehow it turned into this.*
+# Laravel Project Name
 
 <p align="center">
-  <img src="assets/my-face.jpg" width="200" style="border-radius: 50%;" />
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20Logo%20Lockup%20Vertical/2%20Logo%20Lockup%20Vertical%20Dark.svg" width="200" alt="Laravel Logo">
 </p>
 
----
-
-## 🧠 About This Project
-This project started as a **“simple and manageable idea.”**  
-Something small, clean, and easy to build.
-
-Then things happened.
-
-More features got added.  
-More problems appeared.  
-More “temporary fixes” became permanent.
-
-And now… it has evolved into **this**.
+## 📌 Project Overview
+Provide a brief description of what this application does. Mention the core features and the primary goal of the project.
 
 ---
 
-## 🚀 Features
-- ✅ Works (most of the time)
-- 🎥 Records things (hopefully the correct things)
-- 🤯 Logic written during peak confusion
-- 🧩 Built step-by-step under pressure
+## 🚀 Getting Started
 
----
+Follow these steps to get your development environment synchronized and running.
 
-## 🏗️ Tech Stack
-- Laravel (confidence at the beginning)
-- JavaScript (confusion in the middle)
-- MySQL (holds everything together somehow)
-- CSS (adjust until it looks acceptable)
+### 1. Prerequisites
+Ensure you have the following installed:
+*   **PHP** (>= 8.2 recommended)
+*   **Composer**
+*   **Node.js & NPM**
+*   **MySQL**
 
----
-
-## 🧪 How to Run
+### 2. Installation
 ```bash
-# Clone this repo
-git clone YOUR_REPO_LINK
+# Clone the repository
+git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
 
-# Go into folder
-cd fyp
+# Navigate to the directory
+cd your-repo-name
 
-# Run server
-php artisan serve
+# Install PHP dependencies
+composer install
+
+# Install and build frontend assets
+npm install && npm run build
+
+# Copy the example environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=create_any_database_name_you_want
+DB_USERNAME=root
+DB_PASSWORD=

@@ -36,9 +36,47 @@
         .submit-btn { width: 100%; background: #0d6efd; color: white; border: none; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 40px; transition: 0.2s; }
         .submit-btn:hover { background: #0b5ed7; }
         .error-alert { background: #f8d7da; color: #842029; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+
+        .feeling-prompt { font-size: 22px; font-weight: bold; font-style: italic; color: #212529; margin-top: 10px; margin-bottom: 20px; padding-left: 5px; }
+    
+        /* Popup Modal Styles */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .popup-overlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+        .popup-box {
+            background: #fff; padding: 35px 40px; border-radius: 12px;
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px; transform: translateY(-20px); transition: transform 0.3s ease;
+        }
+        .popup-overlay.active .popup-box {
+            transform: translateY(0);
+        }
+        .popup-box h2 { color: #212529; margin-bottom: 10px; font-size: 26px; font-weight: bold;}
+        .popup-box p { color: #555; margin-bottom: 25px; font-size: 17px; line-height: 1.5; }
+        .popup-btn {
+            background: #212529; color: white; border: none; padding: 14px 25px;
+            font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s;
+        }
+        .popup-btn:hover { background: #000; }
+
     </style>
 </head>
 <body>
+
+<!-- PRE-TEST POPUP HTML -->
+    <div class="popup-overlay" id="instructionPopup">
+        <div class="popup-box">
+            <h2>Welcome! 👋</h2>
+            <p>Please complete this <strong>Pre-Test</strong> questionnaire before beginning the computer task.</p>
+            <button class="popup-btn" onclick="closePopup()">Got it, let's start!</button>
+        </div>
+    </div>
 
 <div class="assessment-container">
     
@@ -47,9 +85,10 @@
         <h4>Participant: {{ $testSession->participant->name ?? 'Unknown Participant' }}</h4>
     </div>
 
-    <div class="instruction-text">
-        Right now, I am feeling...<br>
-        <span style="font-size: 14px; font-weight: normal;">(Please rate on a scale of 1: totally disagree to 5: totally agree)</span>
+    <div style="text-align: center; margin-bottom: 40px;">
+        <p style="color: #666; font-size: 16px; font-style: italic;">
+            (Please rate on a scale of 1: totally disagree to 5: totally agree)
+        </p>
     </div>
 
     @if ($errors->any())
@@ -62,6 +101,8 @@
         @csrf
 
         <div class="section-title">Distress Items</div>
+    
+        <div class="feeling-prompt">Right now, I am feeling...</div>
 
         <div class="question-box">
             <div class="question-text">1. ... stressed.</div>
@@ -120,6 +161,8 @@
 
         <div class="section-title">Eustress Items</div>
 
+        <div class="feeling-prompt">Right now, I am feeling...</div>
+
         <div class="question-box">
             <div class="question-text">6. ... full of joy.</div>
             <div class="rating-options">
@@ -170,5 +213,19 @@
     </form>
 </div>
 
+<!-- POPUP JAVASCRIPT -->
+    <script>
+        // Fade the popup in 300ms after the page loads
+        window.onload = function() {
+            setTimeout(function() {
+                document.getElementById('instructionPopup').classList.add('active');
+            }, 300); 
+        };
+
+        // Close the popup when the button is clicked
+        function closePopup() {
+            document.getElementById('instructionPopup').classList.remove('active');
+        }
+    </script>
 </body>
 </html>

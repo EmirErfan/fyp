@@ -24,14 +24,27 @@
 @endsection
 
 @section('content')
+
     <div class="table-section">
         <div class="table-header">
-            <h2>Participants Management</h2>
-            <div class="header-actions">
-                <input type="text" class="search-bar" placeholder="Search by name or ID...">
-                <a href="/participants/create" class="btn-primary"><i class="fas fa-plus"></i> Add Participant</a>
-            </div>
+        <h2>Participants Management</h2>
+        <div class="header-actions">
+            <!-- Wrap your existing input in this form -->
+            <form action="{{ url()->current() }}" method="GET" style="display: inline-flex; gap: 5px;">
+                <input type="text" 
+                    name="search" 
+                    class="search-bar" 
+                    placeholder="Search by name or ID..." 
+                    value="{{ request('search') }}">
+                
+                @if(request('search'))
+                    <a href="{{ url()->current() }}" class="btn-secondary" style="text-decoration: none; padding: 10px;">Clear</a>
+                @endif
+            </form>
+            
+            <a href="/participants/create" class="btn-primary"><i class="fas fa-plus"></i> Add Participant</a>
         </div>
+    </div>
 
         @if($participants->isEmpty())
             <p style="color: #888; text-align: center; padding: 20px;">No participants have been registered yet.</p>
