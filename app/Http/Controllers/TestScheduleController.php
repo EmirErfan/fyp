@@ -15,7 +15,7 @@ class TestScheduleController extends Controller
             $query->where('date', 'like', "%{$search}%")
                 ->orWhere('time', 'like', "%{$search}%");
         })
-        ->orderBy('date', 'asc')
+        ->orderBy('date', 'desc')
         ->get();
 
         return view('schedules.index', compact('schedules'));

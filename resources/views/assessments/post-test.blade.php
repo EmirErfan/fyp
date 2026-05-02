@@ -71,7 +71,7 @@
     <!-- POST-TEST POPUP HTML -->
     <div class="popup-overlay" id="instructionPopup">
         <div class="popup-box">
-            <h2>Task Complete! ✅</h2>
+            <h2>Task Complete!</h2>
             <p>Great job. Now, please complete this <strong>Post-Test</strong> questionnaire to finalize your session.</p>
             <button class="popup-btn" onclick="closePopup()">Continue to Post-Test</button>
         </div>

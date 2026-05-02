@@ -72,7 +72,7 @@
 <!-- PRE-TEST POPUP HTML -->
     <div class="popup-overlay" id="instructionPopup">
         <div class="popup-box">
-            <h2>Welcome! 👋</h2>
+            <h2>Welcome!</h2>
             <p>Please complete this <strong>Pre-Test</strong> questionnaire before beginning the computer task.</p>
             <button class="popup-btn" onclick="closePopup()">Got it, let's start!</button>
         </div>
