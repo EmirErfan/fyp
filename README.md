@@ -1,7 +1,7 @@
 # Laravel Project Name
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20Logo%20Lockup%20Vertical/2%20Logo%20Lockup%20Vertical%20Dark.svg" width="200" alt="Laravel Logo">
+  <img src="https://picperf.io/https://laravelnews.s3.amazonaws.com/images/laravel-featured.png" width="200" alt="Laravel Logo">
 </p>
 
 ## 📌 Project Overview
