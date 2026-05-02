@@ -62,24 +62,45 @@
     <div class="card">
         <div class="card-title">{{ $testName }} Performance Data</div>
         <div class="stat-grid">
-            <div class="stat-box">
-                <div class="stat-number text-primary">
-                    {{ number_format($session->result->accuracy_rate ?? 0, 1) }}%
+            @if($testName == 'Stroop Test')
+                <div class="stat-box">
+                    <div class="stat-number text-primary">
+                        {{ number_format($session->result->accuracy_rate ?? 0, 0) }}
+                    </div>
+                    <div class="stat-label">Total Answered</div>
                 </div>
-                <div class="stat-label">{{ $accuracyLabel }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number text-danger">
-                    {{ $session->result->total_error ?? 0 }}
+                <div class="stat-box">
+                    <div class="stat-number text-success">
+                        {{ $session->result->total_error ?? 0 }}
+                    </div>
+                    <div class="stat-label">Right</div>
                 </div>
-                <div class="stat-label">Total Errors Made</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number text-warning">
-                    {{ number_format($session->result->average_reaction_time ?? 0, 0) }} ms
+                <div class="stat-box">
+                    <div class="stat-number text-danger">
+                        {{ number_format($session->result->average_reaction_time ?? 0, 0) }}
+                    </div>
+                    <div class="stat-label">Wrong</div>
                 </div>
-                <div class="stat-label">Avg Reaction Time</div>
-            </div>
+            @else
+                <div class="stat-box">
+                    <div class="stat-number text-primary">
+                        {{ number_format($session->result->accuracy_rate ?? 0, 1) }}%
+                    </div>
+                    <div class="stat-label">{{ $accuracyLabel }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-danger">
+                        {{ $session->result->total_error ?? 0 }}
+                    </div>
+                    <div class="stat-label">Total Errors Made</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-warning">
+                        {{ number_format($session->result->average_reaction_time ?? 0, 0) }} ms
+                    </div>
+                    <div class="stat-label">Avg Reaction Time</div>
+                </div>
+            @endif
         </div>
     </div>
 

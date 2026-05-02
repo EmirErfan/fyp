@@ -262,9 +262,9 @@
             let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
             let avgReaction = reactionTimes.length > 0 ? (reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length).toFixed(0) : 0;
             
-            formData.append('accuracy_rate', accuracy);
-            formData.append('total_error', totalErrors);
-            formData.append('average_reaction_time', avgReaction);
+            formData.append('accuracy_rate', totalAttempts);
+            formData.append('total_error', correctAnswers);
+            formData.append('average_reaction_time', totalErrors);
 
             fetch(`/test-sessions/${sessionId}/recordings`, { 
                 method: 'POST', 
