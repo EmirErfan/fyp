@@ -47,7 +47,7 @@
         </div>
 
         <div id="start-screen">
-            <p style="font-size: 18px; color: #555; margin-bottom: 30px;">You are required to serially subtract the number 13 from <strong id="instruction-start-number" style="font-size: 22px; color: #222;">...</strong> as fast and as accurately as possible. <strong>If you make a mistake, you will be forced to start over from the beginning.</strong></p>
+            <p style="font-size: 18px; color: #555; margin-bottom: 30px;">You are required to serially subtract the number <strong id="instruction-step-number" style="font-size: 20px; color: #dc3545;">...</strong> from <strong id="instruction-start-number" style="font-size: 22px; color: #222;">...</strong> as fast and as accurately as possible. <strong>If you make a mistake, you will be forced to start over from the beginning.</strong></p>
             <button id="start-btn" onclick="startTest()">Start Experiment</button>
         </div>
 
@@ -56,7 +56,7 @@
             
             <div class="instruction-text">Current Number</div>
             <div class="current-number" id="number-display">...</div>
-            <div class="task-rule">Subtract 13 Repeatedly</div>
+            <div class="task-rule">Subtract <span id="rule-step-number">...</span> Repeatedly</div>
 
             <div class="input-area">
                 <input type="number" id="answer-input" class="answer-input" disabled autocomplete="off">
@@ -113,7 +113,8 @@
         
         // --- MATH LOGIC SETTINGS ---
         const STARTING_NUMBER = Math.floor(Math.random() * 9000) + 1000;
-        const SUBTRACTION_STEP = 13;
+        const possibleSteps = [11, 13, 17, 19];
+        const SUBTRACTION_STEP = possibleSteps[Math.floor(Math.random() * possibleSteps.length)];
         
         let currentDisplayNumber = STARTING_NUMBER;
         let expectedAnswer = STARTING_NUMBER - SUBTRACTION_STEP;
@@ -121,6 +122,8 @@
         // Inject the random number into the HTML immediately on page load
         document.getElementById('instruction-start-number').innerText = STARTING_NUMBER;
         document.getElementById('number-display').innerText = STARTING_NUMBER;
+        document.getElementById('instruction-step-number').innerText = SUBTRACTION_STEP;
+        document.getElementById('rule-step-number').innerText = SUBTRACTION_STEP;
 
         // Scoring
         let totalAttempts = 0;
@@ -371,6 +374,8 @@
             
             formData.append('accuracy_rate', accuracy);
             formData.append('total_error', totalErrors); // Ensures it matches your DB schema
+            formData.append('total_attempts', totalAttempts);
+            formData.append('correct_answers', correctAnswers);
             formData.append('average_reaction_time', 0); // TSST doesn't use reaction time, pass 0 so the controller doesn't crash
 
             fetch(`/test-sessions/${sessionId}/recordings`, { 

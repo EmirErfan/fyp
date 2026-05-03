@@ -83,7 +83,7 @@
                     </div>
                     <div class="stat-label">Wrong</div>
                 </div>
-            @else
+            @elseif($testName == 'MIST')
                 <div class="stat-box">
                     <div class="stat-number text-primary">
                         {{ $session->result->total_attempts ?? 0 }}
@@ -113,6 +113,25 @@
                         {{ number_format($session->result->average_reaction_time ?? 0, 2) }} s
                     </div>
                     <div class="stat-label">Avg Reaction Time</div>
+                </div>
+            @else
+                <div class="stat-box">
+                    <div class="stat-number text-primary">
+                        {{ $session->result->total_attempts ?? 0 }}
+                    </div>
+                    <div class="stat-label">Total Answered</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-danger">
+                        {{ $session->result->total_error ?? 0 }}
+                    </div>
+                    <div class="stat-label">Total Retries</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-info">
+                        {{ number_format($session->result->accuracy_rate ?? 0, 1) }}%
+                    </div>
+                    <div class="stat-label">{{ $accuracyLabel }}</div>
                 </div>
             @endif
         </div>
