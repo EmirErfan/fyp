@@ -123,6 +123,8 @@ class TestSessionController extends Controller
                 [
                     'accuracy_rate' => $request->input('accuracy_rate') ?? 0,
                     'total_error' => $request->input('total_error') ?? $request->input('total_errors') ?? 0,
+                    'total_attempts' => $request->input('total_attempts'),
+                    'correct_answers' => $request->input('correct_answers'),
                     'average_reaction_time' => $request->input('average_reaction_time') ?? 0,
                     
                     // Changed to match your database schema!

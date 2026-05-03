@@ -13,6 +13,8 @@ class Result extends Model
         'test_session_id',
         'accuracy_rate',
         'total_error',
+        'total_attempts',
+        'correct_answers',
         'average_reaction_time',
         'face_video_path',   
         'screen_video_path', 

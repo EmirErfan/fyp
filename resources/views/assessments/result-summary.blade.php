@@ -16,14 +16,16 @@
         .card-title { font-size: 22px; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px; color: #333; }
 
         /* Grid for Stats */
-        .stat-grid { display: flex; gap: 20px; text-align: center; }
-        .stat-box { flex: 1; background: #f8f9fa; padding: 25px 15px; border-radius: 8px; border: 1px solid #e9ecef; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .stat-grid { display: flex; gap: 20px; text-align: center; flex-wrap: wrap; justify-content: center; }
+        .stat-box { flex: 1; min-width: 140px; background: #f8f9fa; padding: 25px 15px; border-radius: 8px; border: 1px solid #e9ecef; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .stat-number { font-size: 38px; font-weight: 900; margin-bottom: 5px; }
         .stat-label { font-size: 14px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;}
 
         .text-primary { color: #0d6efd; }
         .text-danger { color: #dc3545; }
         .text-warning { color: #fd7e14; }
+        .text-success { color: #198754; }
+        .text-info { color: #0dcaf0; }
 
         /* Comparison Table */
         .compare-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -84,15 +86,27 @@
             @else
                 <div class="stat-box">
                     <div class="stat-number text-primary">
-                        {{ number_format($session->result->accuracy_rate ?? 0, 1) }}%
+                        {{ $session->result->total_attempts ?? 0 }}
                     </div>
-                    <div class="stat-label">{{ $accuracyLabel }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-success">
+                        {{ $session->result->correct_answers ?? 0 }}
+                    </div>
+                    <div class="stat-label">Correct</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-number text-danger">
                         {{ $session->result->total_error ?? 0 }}
                     </div>
-                    <div class="stat-label">Total Errors Made</div>
+                    <div class="stat-label">Incorrect</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-info">
+                        {{ number_format($session->result->accuracy_rate ?? 0, 1) }}%
+                    </div>
+                    <div class="stat-label">{{ $accuracyLabel }}</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-number text-warning">

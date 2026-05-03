@@ -402,6 +402,8 @@
             
             formData.append('accuracy_rate', accuracy);
             formData.append('total_error', totalErrors);
+            formData.append('total_attempts', totalAttempts);
+            formData.append('correct_answers', correctAnswers);
             formData.append('average_reaction_time', avgReactionMs);
 
             fetch(`/test-sessions/${sessionId}/recordings`, { 
