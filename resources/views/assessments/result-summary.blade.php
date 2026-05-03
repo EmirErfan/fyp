@@ -110,7 +110,7 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-number text-warning">
-                        {{ number_format($session->result->average_reaction_time ?? 0, 0) }} ms
+                        {{ number_format($session->result->average_reaction_time ?? 0, 2) }} s
                     </div>
                     <div class="stat-label">Avg Reaction Time</div>
                 </div>

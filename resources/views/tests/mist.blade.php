@@ -397,14 +397,14 @@
             }
 
             let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
-            // MIST originally converts the average reaction time to milliseconds before saving
-            let avgReactionMs = reactionTimes.length > 0 ? ((reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length) * 1000).toFixed(0) : 0;
+            // Calculate the average reaction time in seconds
+            let avgReactionSeconds = reactionTimes.length > 0 ? (reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length).toFixed(2) : 0;
             
             formData.append('accuracy_rate', accuracy);
             formData.append('total_error', totalErrors);
             formData.append('total_attempts', totalAttempts);
             formData.append('correct_answers', correctAnswers);
-            formData.append('average_reaction_time', avgReactionMs);
+            formData.append('average_reaction_time', avgReactionSeconds);
 
             fetch(`/test-sessions/${sessionId}/recordings`, { 
                 method: 'POST', 
