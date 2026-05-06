@@ -188,7 +188,7 @@
                 }
 
                 faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "window" }, audio: false });
 
                 faceVid.srcObject = faceStreamMain;
                 screenVid.srcObject = screenStreamMain;

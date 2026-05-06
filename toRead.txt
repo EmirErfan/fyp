@@ -18,3 +18,21 @@ git revert HEAD
 Option C (Reset to a specific commit)
 git reset --hard xxxxxxx
 git push --force
+
+
+
+TO OPEN SERVER
+
+Open Docker wait until Green
+
+in terminal open wsl
+
+To turn on SERVER
+./vendor/bin/sail up -d
+
+Open Browser
+http://localhost
+http://localhost:8080
+
+To close SERVER
+./vendor/bin/sail down
