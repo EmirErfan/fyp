@@ -36,3 +36,7 @@ http://localhost:8080
 
 To close SERVER
 ./vendor/bin/sail down
+
+just in case
+
+cd /mnt/c/xampp/htdocs/stress-system
