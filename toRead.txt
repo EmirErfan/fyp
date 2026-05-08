@@ -19,9 +19,7 @@ Option C (Reset to a specific commit)
 git reset --hard xxxxxxx
 git push --force
 
-
-
-TO OPEN SERVER
+##TO OPEN SERVER (DOCKER UPDATE)
 
 Open Docker wait until Green
 
