@@ -32,7 +32,7 @@ class TestSessionController extends Controller
         })
         ->get()
         ->sortBy(function ($session) {
-            return $session->testSchedule->date; //[cite: 3]
+            return $session->testSchedule->date;
         });
 
         return view('test_sessions.index', compact('testSessions'));
@@ -98,8 +98,8 @@ class TestSessionController extends Controller
             'test_id' => $request->test_id,
         ]);
 
-        // 4. Send them back to the schedules page
-        return redirect('/schedules')->with('success', 'Participant assigned to session successfully!');
+        // 4. Send them back to the SPECIFIC schedule page instead of the main list!
+        return redirect('/schedules/' . $request->test_schedule_id)->with('success', 'Participant assigned to session successfully!');
     }
 
     public function storeRecordings(Request $request, $id)

@@ -41,6 +41,25 @@
 <body>
 
 @php
+    // ==========================================
+    // 📝 EDIT YOUR QUESTIONS HERE
+    // ==========================================
+    $distressQuestions = [
+        1 => "1. I felt tense or anxious.",
+        2 => "2. I felt overwhelmed by the task.",
+        3 => "3. I felt mentally exhausted.",
+        4 => "4. I felt frustrated or annoyed.",
+        5 => "5. I felt under pressure."
+    ];
+
+    $eustressQuestions = [
+        1 => "1. I felt motivated to succeed.",
+        2 => "2. I felt completely focused.",
+        3 => "3. I felt energized by the challenge.",
+        4 => "4. I felt confident in my abilities."
+    ];
+    // ==========================================
+
     // Calculate Pre-Test Totals
     $preDistress = $preTest ? ($preTest->distress_item_01 + $preTest->distress_item_02 + $preTest->distress_item_03 + $preTest->distress_item_04 + $preTest->distress_item_05) : 0;
     $preEustress = $preTest ? ($preTest->eustress_item_01 + $preTest->eustress_item_02 + $preTest->eustress_item_03 + $preTest->eustress_item_04) : 0;
@@ -158,7 +177,15 @@
     </div>
 
     <div class="card">
-        <div class="card-title">Psychological Impact (DESS Scale)</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 22px; font-weight: bold; color: #333;">
+                Psychological Impact (DESS Scale)
+            </h3>
+            <button onclick="openDessModal()" style="padding: 6px 14px; background-color: #eff6ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                View Full Answers
+            </button>
+        </div>
+
         <table class="compare-table">
             <thead>
                 <tr>
@@ -207,6 +234,114 @@
     </div>
 
 </div>
+
+<div id="dessModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+    
+    <div style="background-color: #fff; margin: 5% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #333;">Complete DESS Scale Comparison</h2>
+            <span onclick="closeDessModal()" style="color: #aaa; font-size: 32px; font-weight: bold; cursor: pointer; line-height: 1;">&times;</span>
+        </div>
+
+        <table class="compare-table" style="margin-top: 0;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; width: 45%;">Question Item</th>
+                    <th style="color: #0284c7;">Pre-Test</th>
+                    <th style="color: #b91c1c;">Post-Test</th>
+                    <th>Score Change</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if($preTest || $postTest)
+                    {{-- Loop through Distress Items (1-5) --}}
+                    @for($i = 1; $i <= 5; $i++)
+                        @php 
+                            $column = 'distress_item_0' . $i; 
+                            $preScore = $preTest ? (int) $preTest->$column : 0;
+                            $postScore = $postTest ? (int) $postTest->$column : 0;
+                            $difference = $postScore - $preScore;
+                        @endphp
+                        <tr>
+                            <td class="label" style="font-weight: bold; color: #dc3545; font-size: 14px;">
+                                {{ $distressQuestions[$i] ?? "Distress Item 0" . $i }}
+                            </td>
+                            <td style="background-color: #f0f9ff;">{{ $preScore > 0 ? $preScore : '-' }}</td>
+                            <td style="background-color: #fef2f2;">{{ $postScore > 0 ? $postScore : '-' }}</td>
+                            <td>
+                                @if($difference > 0)
+                                    <span style="color: #b91c1c; font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 4px;">+{{ $difference }}</span>
+                                @elseif($difference < 0)
+                                    <span style="color: #15803d; font-weight: bold; background: #dcfce7; padding: 4px 8px; border-radius: 4px;">{{ $difference }}</span>
+                                @else
+                                    <span style="color: #6b7280; font-style: italic;">No Change</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endfor
+
+                    {{-- Loop through Eustress Items (1-4) --}}
+                    @for($i = 1; $i <= 4; $i++)
+                        @php 
+                            $column = 'eustress_item_0' . $i; 
+                            $preScore = $preTest ? (int) $preTest->$column : 0;
+                            $postScore = $postTest ? (int) $postTest->$column : 0;
+                            $difference = $postScore - $preScore;
+                        @endphp
+                        <tr>
+                            <td class="label" style="font-weight: bold; color: #198754; font-size: 14px;">
+                                {{ $eustressQuestions[$i] ?? "Eustress Item 0" . $i }}
+                            </td>
+                            <td style="background-color: #f0f9ff;">{{ $preScore > 0 ? $preScore : '-' }}</td>
+                            <td style="background-color: #fef2f2;">{{ $postScore > 0 ? $postScore : '-' }}</td>
+                            <td>
+                                @if($difference > 0)
+                                    <span style="color: #15803d; font-weight: bold; background: #dcfce7; padding: 4px 8px; border-radius: 4px;">+{{ $difference }}</span>
+                                @elseif($difference < 0)
+                                    <span style="color: #b91c1c; font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 4px;">{{ $difference }}</span>
+                                @else
+                                    <span style="color: #6b7280; font-style: italic;">No Change</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endfor
+                @else
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 30px; color: #666;">
+                            Incomplete data. Both Pre and Post assessments must be completed.
+                        </td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+
+        <div style="margin-top: 25px; text-align: right;">
+            <button onclick="closeDessModal()" style="padding: 10px 20px; background-color: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px;">Close Comparison</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var modal = document.getElementById("dessModal");
+
+    function openDessModal() {
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
+    }
+
+    function closeDessModal() {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto"; // Re-enable scrolling
+    }
+
+    // Close modal if user clicks outside the white box
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeDessModal();
+        }
+    }
+</script>
 
 </body>
 </html>
