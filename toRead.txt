@@ -5,14 +5,15 @@ git add . @ git file name
 git commit -m 'message'
 git push
 
-GO BACK
+
+## GO BACK
 
 git log --oneline
 
 Option A (Just look at old code)
 git checkout xxxxxxx
 
-Option B (Undo last commit but keep the file)
+Option B (Undo last commit but keep the file) / Undo latest update on github
 git revert HEAD
 
 Option C (Reset to a specific commit)
@@ -30,7 +31,7 @@ To turn on SERVER
 
 Open Browser
 http://localhost
-http://localhost:8080
+for phpmyadmin http://localhost:8081
 
 To close SERVER
 ./vendor/bin/sail down
