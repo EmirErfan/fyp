@@ -2,15 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Test; // Import our Test model!
+use App\Models\Test; 
 
 class TestSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         // 1. The Stroop Test
@@ -19,19 +15,13 @@ class TestSeeder extends Seeder
             'test_level' => 'Standard'
         ]);
 
-        // 2. The MIST - Control Phase
+        // 2. The MIST (Combined into a single test)
         Test::create([
             'test_type' => 'MIST',
-            'test_level' => 'Control Phase'
+            'test_level' => 'Cognitive Load'
         ]);
 
-        // 3. The MIST - Experimental Phase
-        Test::create([
-            'test_type' => 'MIST',
-            'test_level' => 'Experimental Phase'
-        ]);
-
-        // 4. The TSST Arithmetic Task
+        // 3. The TSST Arithmetic Task
         Test::create([
             'test_type' => 'TSST',
             'test_level' => 'Arithmetic Task'

@@ -32,6 +32,8 @@
         #start-btn { padding: 15px 30px; background: #0d6efd; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold;}
         .hidden { display: none !important; }
         #results-screen { display: none; padding: 40px; color: #fff; font-size: 22px; font-weight: bold; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .blink-text { animation: blink 0.2s infinite; }
     </style>
 </head>
 <body>
@@ -310,6 +312,7 @@
                     feedback.innerText = "Correct";
                     feedback.style.color = "#198754";
                 }
+                feedback.classList.remove('blink-text');
             } else {
                 totalErrors++;
                 consecutiveErrors++;
@@ -323,6 +326,7 @@
                     feedback.innerText = "Incorrect";
                     feedback.style.color = "#dc3545";
                 }
+                feedback.classList.add('blink-text');
                 
                 document.getElementById('test-area').animate([
                     { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0px)' }
@@ -331,8 +335,6 @@
 
             updateFakePeerPressure();
 
-            setTimeout(() => { if(feedback.innerText !== "") feedback.innerText = ""; }, 1500);
-            
             answerInput.value = '';
             generateEquation();
         }

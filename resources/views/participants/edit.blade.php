@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Add Participant - Stress System')
+@section('title', 'Edit Participant - Stress System')
 
 @section('styles')
 <style>
@@ -30,38 +30,38 @@
 
     <div class="form-container">
         <div class="form-header">
-            <h2>Register a New Participant</h2>
+            <h2>Edit Participant #P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }}</h2>
         </div>
 
-        <form action="/participants" method="POST">
+        <form action="/participants/{{ $participant->id }}" method="POST">
             @csrf
+            @method('PUT')
 
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" placeholder="e.g. Ahmad" required>
+                <input type="text" id="name" name="name" value="{{ $participant->name }}" required>
             </div>
 
             <div class="form-group row">
                 <div class="col">
                     <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" name="dob" max="{{ date('Y-m-d') }}" required>
+                    <input type="date" id="dob" name="dob" value="{{ \Carbon\Carbon::parse($participant->dob)->format('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
                 </div>
                 <div class="col">
                     <label for="gender">Gender</label>
                     <select id="gender" name="gender" required>
-                        <option value="" disabled selected>Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
+                        <option value="Male" {{ $participant->gender == 'Male' ? 'selected' : '' }}>Male</option>
+                        <option value="Female" {{ $participant->gender == 'Female' ? 'selected' : '' }}>Female</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="date_joined">Date Joined</label>
-                <input type="date" id="date_joined" name="date_joined" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}" required>
+                <input type="date" id="date_joined" name="date_joined" value="{{ \Carbon\Carbon::parse($participant->date_joined)->format('Y-m-d') }}" required>
             </div>
 
-            <button type="submit" class="btn-submit">Register Participant</button>
+            <button type="submit" class="btn-submit">Update Participant</button>
         </form>
     </div>
 @endsection

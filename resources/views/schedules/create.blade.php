@@ -11,7 +11,7 @@
     .form-group { margin-bottom: 20px; }
     label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; font-size: 14px; }
     
-    input[type="date"], input[type="time"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; transition: 0.2s; font-family: inherit; color: #333;}
+    input[type="date"], input[type="time"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; transition: 0.2s; font-family: inherit; color: #333; box-sizing: border-box;}
     input[type="date"]:focus, input[type="time"]:focus { border-color: #4b6bfb; outline: none; box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.1); }
     
     .btn-submit { background-color: #4b6bfb; color: white; border: none; padding: 14px 20px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-top: 10px; }
@@ -46,4 +46,46 @@
             <button type="submit" class="btn-submit">Save Schedule</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            const timeInput = document.getElementById('time');
+
+            function enforceTimeLimits() {
+                // Get exactly what day it is right now
+                const now = new Date();
+                
+                // Format today's date to YYYY-MM-DD so it matches the HTML input
+                const todayStr = now.getFullYear() + '-' + 
+                                String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                                String(now.getDate()).padStart(2, '0');
+                
+                // If the user selected TODAY...
+                if (dateInput.value === todayStr) {
+                    // Figure out the exact hour and minute it is right now
+                    const currentHours = String(now.getHours()).padStart(2, '0');
+                    const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+                    const currentTime = `${currentHours}:${currentMinutes}`;
+                    
+                    // Lock the time input so they can't go before right now
+                    timeInput.min = currentTime;
+
+                    // If they already typed a bad time, erase it
+                    if (timeInput.value && timeInput.value < currentTime) {
+                        timeInput.value = '';
+                    }
+                } else {
+                    // If they picked tomorrow or next week, remove the time lock!
+                    timeInput.removeAttribute('min');
+                }
+            }
+
+            // Every time the user changes the Date, re-check the rules
+            dateInput.addEventListener('change', enforceTimeLimits);
+            
+            // Also run it once immediately when the page loads, just in case
+            if(dateInput.value) enforceTimeLimits();
+        });
+    </script>
 @endsection

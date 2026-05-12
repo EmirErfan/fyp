@@ -36,6 +36,8 @@
         .uploading-message i { margin-right: 10px; }
         
         .hidden { display: none !important; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .blink-text { animation: blink 0.2s infinite; }
     </style>
 </head>
 <body>
@@ -138,6 +140,44 @@
         let faceStreamMain, screenStreamMain;
         const sessionId = {{ $testSession->id }};
 
+        // --- AUDIO FEEDBACK SETUP ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
         const answerInput = document.getElementById('answer-input');
         const feedbackMsg = document.getElementById('feedback-message');
         const numberDisplay = document.getElementById('number-display');
@@ -177,6 +217,7 @@
                 idleTimer = setInterval(() => {
                     let randomSlowMsg = slowMessages[Math.floor(Math.random() * slowMessages.length)];
                     showFeedback(randomSlowMsg, "#dc3545"); 
+                    playSound('incorrect');
                 }, 6000); 
             }
         }
@@ -315,6 +356,7 @@
                     { transform: 'translateX(10px)' },
                     { transform: 'translateX(0px)' }
                 ], { duration: 400 });
+                playSound('incorrect');
             }
 
             numberDisplay.innerText = currentDisplayNumber;
@@ -325,13 +367,11 @@
         function showFeedback(text, color) {
             feedbackMsg.innerText = text;
             feedbackMsg.style.color = color;
-            
-            // Clear message after 2 seconds
-            setTimeout(() => {
-                if(feedbackMsg.innerText === text) {
-                    feedbackMsg.innerText = "";
-                }
-            }, 2000);
+            if (color === "#dc3545") {
+                feedbackMsg.classList.add('blink-text');
+            } else {
+                feedbackMsg.classList.remove('blink-text');
+            }
         }
 
         function endTest() {

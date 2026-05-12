@@ -9,9 +9,17 @@
     .table-header h2 { font-size: 18px; color: #333; margin: 0;}
     
     .header-actions { display: flex; gap: 15px; align-items: center; }
-    .search-bar { padding: 8px 15px; border: 1px solid #eaeaea; border-radius: 6px; font-size: 13px; width: 250px; }
     .btn-primary { background-color: #4b6bfb; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; }
     
+    /* Search Bar Styles (Matched with other pages) */
+    .filter-section { display: flex; gap: 10px; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eaeaea; align-items: center; flex-wrap: wrap;}
+    .filter-input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; flex-grow: 1; min-width: 250px; outline: none; transition: 0.2s;}
+    .filter-input:focus { border-color: #4b6bfb; box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.1); }
+    .filter-btn { background-color: #212529; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s;}
+    .filter-btn:hover { background-color: #000; }
+    .clear-btn { color: #888; text-decoration: none; font-size: 14px; margin-left: 5px; transition: 0.2s;}
+    .clear-btn:hover { color: #dc3545; }
+
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { padding: 15px 10px; border-bottom: 2px solid #eaeaea; color: #888; font-size: 13px; text-transform: uppercase; font-weight: 600; }
     td { padding: 15px 10px; border-bottom: 1px solid #eaeaea; color: #444; font-size: 14px; vertical-align: middle; }
@@ -27,27 +35,23 @@
 
     <div class="table-section">
         <div class="table-header">
-        <h2>Participants Management</h2>
-        <div class="header-actions">
-            <!-- Wrap your existing input in this form -->
-            <form action="{{ url()->current() }}" method="GET" style="display: inline-flex; gap: 5px;">
-                <input type="text" 
-                    name="search" 
-                    class="search-bar" 
-                    placeholder="Search by name or ID..." 
-                    value="{{ request('search') }}">
-                
-                @if(request('search'))
-                    <a href="{{ url()->current() }}" class="btn-secondary" style="text-decoration: none; padding: 10px;">Clear</a>
-                @endif
-            </form>
-            
-            <a href="/participants/create" class="btn-primary"><i class="fas fa-plus"></i> Add Participant</a>
+            <h2>Participants Management</h2>
+            <div class="header-actions">
+                <a href="/participants/create" class="btn-primary"><i class="fas fa-plus"></i> Add Participant</a>
+            </div>
         </div>
-    </div>
+
+        <form action="/participants" method="GET" class="filter-section">
+            <input type="text" name="search" class="filter-input" placeholder="Search by Name or Participant ID (e.g. #P-001)..." value="{{ request('search') }}">
+            <button type="submit" class="filter-btn">Search</button>
+
+            @if(request('search'))
+                <a href="/participants" class="clear-btn">Clear Search</a>
+            @endif
+        </form>
 
         @if($participants->isEmpty())
-            <p style="color: #888; text-align: center; padding: 20px;">No participants have been registered yet.</p>
+            <p style="color: #888; text-align: center; padding: 40px; background: #fcfcfc; border-radius: 8px; border: 1px dashed #ccc;">No participants match your search.</p>
         @else
             <div style="overflow-x: auto;">
                 <table>
@@ -70,7 +74,7 @@
                                 <td>{{ $participant->gender }}</td>
                                 <td>{{ \Carbon\Carbon::parse($participant->date_joined)->format('d/m/Y') }}</td>
                                 <td>
-                                    <a href="#" class="action-btn">More</a>
+                                    <a href="/participants/{{ $participant->id }}/edit" class="action-btn">Edit</a>
                                 </td>
                             </tr>
                         @endforeach

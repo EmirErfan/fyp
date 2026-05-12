@@ -7,6 +7,7 @@ use App\Http\Controllers\TestSessionController;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StressTestController;
+use App\Http\Controllers\ExportController;
 use App\Models\Participant;
 use App\Models\TestSession;
 
@@ -40,6 +41,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/participants', [ParticipantController::class, 'index']);
     Route::get('/participants/create', [ParticipantController::class, 'create']);
     Route::post('/participants', [ParticipantController::class, 'store']);
+    Route::get('/participants/{id}/edit', [ParticipantController::class, 'edit']);
+    Route::put('/participants/{id}', [ParticipantController::class, 'update']);
+
+    // DATA EXPORT
+    Route::get('/export', [ExportController::class, 'index']);
+    Route::get('/export/csv', [ExportController::class, 'downloadCsv']);
+
+    // ADMIN ONLY USER MANAGEMENT
+    Route::middleware([\App\Http\Middleware\IsAdmin::class])->group(function () {
+        Route::get('/users', [\App\Http\Controllers\UserController::class, 'index']);
+        Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create']);
+        Route::post('/users', [\App\Http\Controllers\UserController::class, 'store']);
+    });
 
     // TEST SESSIONS & ASSIGNMENTS
     Route::get('/test-sessions', [TestSessionController::class, 'index']);

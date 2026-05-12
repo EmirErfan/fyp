@@ -16,19 +16,34 @@ class TestSessionController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $status = $request->input('status');
+
+        // UPGRADED SMART ID SEARCH:
+        // Now cleanly matches "#P-005", "P-05", "p001", "P001", or just "005"
+        // and extracts only the pure number!
+        $searchId = $search;
+        if (preg_match('/^#?P?-?0*(\d+)$/i', $search, $matches)) {
+            $searchId = $matches[1]; 
+        }
 
         $testSessions = TestSession::whereHas('testSchedule', function ($query) {
             $query->whereDate('date', '>=', now()->toDateString());
         })
-        ->when($search, function ($query, $search) {
-            // Look into the related participant's name
-            $query->whereHas('participant', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
+        ->when($search, function ($query) use ($search, $searchId) {
+            $query->whereHas('participant', function ($q) use ($search, $searchId) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$searchId}%");
             })
-            // Or look into the related test type
             ->orWhereHas('test', function ($q) use ($search) {
                 $q->where('test_type', 'like', "%{$search}%");
             });
+        })
+        ->when($status, function ($query, $status) {
+            if ($status === 'complete') {
+                $query->has('result');
+            } elseif ($status === 'in-progress') {
+                $query->doesntHave('result');
+            }
         })
         ->get()
         ->sortBy(function ($session) {

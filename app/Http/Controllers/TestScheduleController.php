@@ -11,9 +11,17 @@ class TestScheduleController extends Controller
     {
         $search = $request->input('search');
 
-        $schedules = \App\Models\TestSchedule::when($search, function ($query, $search) {
-            $query->where('date', 'like', "%{$search}%")
-                ->orWhere('time', 'like', "%{$search}%");
+        // SMART ID SEARCH:
+        // Automatically understands "#S-009", "s009", "S-9", or just "9"
+        $searchId = $search;
+        if (preg_match('/^#?S?-?0*(\d+)$/i', $search, $matches)) {
+            $searchId = $matches[1];
+        }
+
+        $schedules = \App\Models\TestSchedule::when($search, function ($query) use ($search, $searchId) {
+            $query->where('id', 'like', "%{$searchId}%")
+                  ->orWhere('date', 'like', "%{$search}%")
+                  ->orWhere('time', 'like', "%{$search}%");
         })
         ->orderBy('date', 'desc')
         ->get();

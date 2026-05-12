@@ -63,7 +63,7 @@
                     <option value="" disabled selected>-- Choose a Test --</option>
                     @foreach($tests as $test)
                         <option value="{{ $test->id }}">
-                            {{ $test->test_type }} ({{ $test->test_level }})
+                            {{ $test->test_type }}
                         </option>
                     @endforeach
                 </select>

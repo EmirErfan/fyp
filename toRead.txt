@@ -39,3 +39,12 @@ To close SERVER
 just in case
 
 cd /mnt/c/xampp/htdocs/stress-system
+
+
+## To migrate to database
+./vendor/bin/sail artisan migrate:fresh
+
+if error
+./vendor/bin/sail artisan migrate:fresh --path="database/migrations/xxxx.php"
+
+sail artisan migrate:fresh

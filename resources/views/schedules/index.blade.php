@@ -11,6 +11,15 @@
     .header-actions { display: flex; gap: 15px; }
     .btn-primary { background-color: #4b6bfb; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; }
     
+    /* Search Bar Styles */
+    .filter-section { display: flex; gap: 10px; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eaeaea; align-items: center; flex-wrap: wrap;}
+    .filter-input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; flex-grow: 1; min-width: 250px; outline: none; transition: 0.2s;}
+    .filter-input:focus { border-color: #4b6bfb; box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.1); }
+    .filter-btn { background-color: #212529; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s;}
+    .filter-btn:hover { background-color: #000; }
+    .clear-btn { color: #888; text-decoration: none; font-size: 14px; margin-left: 5px; transition: 0.2s;}
+    .clear-btn:hover { color: #dc3545; }
+
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { padding: 15px 10px; border-bottom: 2px solid #eaeaea; color: #888; font-size: 13px; text-transform: uppercase; font-weight: 600; }
     td { padding: 15px 10px; border-bottom: 1px solid #eaeaea; color: #444; font-size: 14px; vertical-align: middle; }
@@ -31,8 +40,17 @@
             </div>
         </div>
 
+        <form action="/schedules" method="GET" class="filter-section">
+            <input type="text" name="search" class="filter-input" placeholder="Search by Schedule ID, Date (YYYY-MM-DD), or Time..." value="{{ request('search') }}">
+            <button type="submit" class="filter-btn">Search</button>
+
+            @if(request('search'))
+                <a href="/schedules" class="clear-btn">Clear Search</a>
+            @endif
+        </form>
+
         @if($schedules->isEmpty())
-            <p style="color: #888; text-align: center; padding: 20px;">No schedules have been created yet.</p>
+            <p style="color: #888; text-align: center; padding: 40px; background: #fcfcfc; border-radius: 8px; border: 1px dashed #ccc;">No schedules match your search.</p>
         @else
             <div style="overflow-x: auto;">
                 <table>

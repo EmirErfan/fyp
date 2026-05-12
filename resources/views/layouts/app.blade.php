@@ -294,6 +294,16 @@
             <a href="/participants" class="nav-item {{ Request::is('participants*') ? 'active' : '' }}" title="Participants">
                 <i class="fas fa-users"></i> <span class="nav-text">Participants</span>
             </a>
+            <a href="/export" class="nav-item {{ Request::is('export*') ? 'active' : '' }}" title="Data Export">
+                <i class="fas fa-file-export"></i> <span class="nav-text">Data Export</span>
+            </a>
+
+            @if(auth()->check() && auth()->user()->role === 'admin')
+            <div class="menu-label"><span class="nav-text">System</span></div>
+            <a href="/users" class="nav-item {{ Request::is('users*') ? 'active' : '' }}" title="User Management">
+                <i class="fas fa-user-shield"></i> <span class="nav-text">User Management</span>
+            </a>
+            @endif
         </nav>
 
         <div class="sidebar-footer">

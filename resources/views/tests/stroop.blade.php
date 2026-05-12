@@ -30,6 +30,8 @@
         #start-btn { padding: 15px 30px; background: #212529; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold;}
         .hidden { display: none !important; }
         #results-screen { display: none; padding: 40px; color: #4b6bfb; font-size: 22px; font-weight: bold; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .blink-text { animation: blink 0.2s infinite; }
     </style>
 </head>
 <body>
@@ -37,7 +39,7 @@
     <div class="test-container" id="game-screen">
         <div class="header">
             <div class="title">Stroop Task</div>
-            <div class="timer" id="timer-display">01:00</div> 
+            <div class="timer" id="timer-display">02:00</div> 
         </div>
 
         <div id="start-screen">
@@ -47,6 +49,7 @@
 
         <div id="test-area" class="hidden">
             <div class="feedback" id="feedback-message"></div>
+            <div id="question-timer-display" style="font-size: 20px; color: #dc3545; font-weight: bold; margin-bottom: 15px;"></div>
             <div class="instruction">What is the INK COLOR?</div>
             
             <div id="word-display">WORD</div>
@@ -54,8 +57,6 @@
             <div class="color-buttons">
                 <button class="color-btn btn-red" onclick="checkAnswer('red')">Red</button>
                 <button class="color-btn btn-blue" onclick="checkAnswer('blue')">Blue</button>
-                <button class="color-btn btn-green" onclick="checkAnswer('green')">Green</button>
-                <button class="color-btn btn-yellow" onclick="checkAnswer('yellow')">Yellow</button>
             </div>
         </div>
     </div>
@@ -68,15 +69,15 @@
     <script>
         const colors = [
             { name: 'RED', value: 'red', hex: '#dc3545' },
-            { name: 'BLUE', value: 'blue', hex: '#0d6efd' },
-            { name: 'GREEN', value: 'green', hex: '#198754' },
-            { name: 'YELLOW', value: 'yellow', hex: '#ffc107' }
+            { name: 'BLUE', value: 'blue', hex: '#0d6efd' }
         ];
 
-        let globalTimeRemaining = 60; 
+        let globalTimeRemaining = 120; 
         let isPlaying = false;
         let currentInkColor = '';
         let wordStartTime = 0;
+        let questionTimerInterval;
+        let questionTimeRemaining = 0;
         
         let totalAttempts = 0, correctAnswers = 0, totalErrors = 0, reactionTimes = [];
 
@@ -85,6 +86,44 @@
         let animationId;
         let faceStreamMain, screenStreamMain;
         const sessionId = {{ $testSession->id }};
+
+        // --- AUDIO FEEDBACK SETUP ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
 
         // --- THE CSS TRICK ---
         // Move them 10,000 pixels off the screen so the browser still fully renders them, but the user can't see them!
@@ -188,17 +227,50 @@
 
         function nextWord() {
             let textObj = colors[Math.floor(Math.random() * colors.length)];
-            let colorObj = Math.random() > 0.5 ? textObj : colors[Math.floor(Math.random() * colors.length)];
+            let otherColors = colors.filter(c => c.value !== textObj.value);
+            let colorObj = otherColors[Math.floor(Math.random() * otherColors.length)];
             
             currentInkColor = colorObj.value;
             let display = document.getElementById('word-display');
             display.innerText = textObj.name;
             display.style.color = colorObj.hex;
             wordStartTime = Date.now();
+
+            startQuestionTimer();
+        }
+
+        function startQuestionTimer() {
+            if (questionTimerInterval) clearInterval(questionTimerInterval);
+            
+            questionTimeRemaining = globalTimeRemaining > 60 ? 7 : 3;
+            document.getElementById('question-timer-display').innerText = `Time left: ${questionTimeRemaining}s`;
+
+            questionTimerInterval = setInterval(() => {
+                questionTimeRemaining--;
+                document.getElementById('question-timer-display').innerText = `Time left: ${questionTimeRemaining}s`;
+                
+                if (questionTimeRemaining <= 0) {
+                    clearInterval(questionTimerInterval);
+                    if (!isPlaying) return;
+                    totalAttempts++;
+                    totalErrors++;
+                    let feedback = document.getElementById('feedback-message');
+                    feedback.innerText = "TIMEOUT";
+                    feedback.style.color = "#dc3545";
+                    feedback.classList.add('blink-text');
+                    document.getElementById('test-area').animate([
+                        { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0px)' }
+                    ], { duration: 300 });
+                    playSound('incorrect');
+                    setTimeout(() => { if(feedback.innerText !== "") { feedback.innerText = ""; feedback.classList.remove('blink-text'); } }, 500);
+                    nextWord();
+                }
+            }, 1000);
         }
 
         function checkAnswer(selectedColor) {
             if(!isPlaying) return;
+            if(questionTimerInterval) clearInterval(questionTimerInterval);
             totalAttempts++;
             reactionTimes.push(Date.now() - wordStartTime);
 
@@ -207,21 +279,25 @@
                 correctAnswers++;
                 feedback.innerText = "Correct";
                 feedback.style.color = "#198754";
+                feedback.classList.remove('blink-text');
             } else {
                 totalErrors++;
                 feedback.innerText = "WRONG";
                 feedback.style.color = "#dc3545";
+                feedback.classList.add('blink-text');
                 document.getElementById('test-area').animate([
                     { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0px)' }
                 ], { duration: 300 });
+                playSound('incorrect');
             }
 
-            setTimeout(() => { if(feedback.innerText !== "") feedback.innerText = ""; }, 500);
+            setTimeout(() => { if(feedback.innerText !== "") { feedback.innerText = ""; feedback.classList.remove('blink-text'); } }, 500);
             nextWord();
         }
 
         function endTest() {
             isPlaying = false;
+            if (questionTimerInterval) clearInterval(questionTimerInterval);
             cancelAnimationFrame(animationId);
             
             document.getElementById('game-screen').classList.add('hidden');
