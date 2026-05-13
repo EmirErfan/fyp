@@ -61,6 +61,18 @@
                 <input type="date" id="date_joined" name="date_joined" value="{{ \Carbon\Carbon::parse($participant->date_joined)->format('Y-m-d') }}" required>
             </div>
 
+            @if(auth()->user()->role === 'admin')
+            <div class="form-group">
+                <label for="user_id">Assign to Researcher</label>
+                <select id="user_id" name="user_id">
+                    <option value="">-- No Assignment (Admin Only) --</option>
+                    @foreach($researchers as $researcher)
+                        <option value="{{ $researcher->id }}" {{ $participant->user_id == $researcher->id ? 'selected' : '' }}>{{ $researcher->name }} ({{ ucfirst($researcher->role) }})</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+
             <button type="submit" class="btn-submit">Update Participant</button>
         </form>
     </div>

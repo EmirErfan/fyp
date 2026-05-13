@@ -18,10 +18,18 @@ class TestScheduleController extends Controller
             $searchId = $matches[1];
         }
 
-        $schedules = \App\Models\TestSchedule::when($search, function ($query) use ($search, $searchId) {
-            $query->where('id', 'like', "%{$searchId}%")
-                  ->orWhere('date', 'like', "%{$search}%")
-                  ->orWhere('time', 'like', "%{$search}%");
+        $query = \App\Models\TestSchedule::query();
+        
+        if (auth()->user()->role === 'researcher') {
+            $query->where('user_id', auth()->id());
+        }
+
+        $schedules = $query->when($search, function ($q) use ($search, $searchId) {
+            $q->where(function($subQ) use ($search, $searchId) {
+                $subQ->where('id', 'like', "%{$searchId}%")
+                     ->orWhere('date', 'like', "%{$search}%")
+                     ->orWhere('time', 'like', "%{$search}%");
+            });
         })
         ->orderBy('date', 'desc')
         ->get();
@@ -48,6 +56,7 @@ class TestScheduleController extends Controller
         TestSchedule::create([
             'date' => $request->date,
             'time' => $request->time,
+            'user_id' => auth()->id(),
         ]);
 
         // 3. Redirect back to the list page with a success message
@@ -59,6 +68,14 @@ class TestScheduleController extends Controller
     {
         // Notice we grab the nested relationships: testSessions -> participant, test, result
         $schedule = \App\Models\TestSchedule::with(['testSessions.participant', 'testSessions.test', 'testSessions.result'])->findOrFail($id);
+
+        if (auth()->user()->role === 'researcher' && $schedule->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (auth()->user()->role === 'researcher') {
+            $schedule->setRelation('testSessions', $schedule->testSessions->where('user_id', auth()->id()));
+        }
 
         return view('schedules.show', compact('schedule'));
     }

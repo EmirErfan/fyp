@@ -265,6 +265,22 @@
             .topbar { left: 0; }
             .main-content { padding: 1.5rem; }
         }
+
+        /* Profile Dropdown Styles*/
+        .profile-menu { position: relative; display: inline-flex; align-items: center; gap: 10px; background: #f4f7f6; padding: 6px 15px 6px 6px; border-radius: 30px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .profile-menu:hover { background: #eef2ff; border-color: #d0d7f9; }
+        .profile-avatar { background: #212529; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .profile-name { font-size: 14px; font-weight: 600; color: #333; }
+        
+        .profile-dropdown { display: none; position: absolute; top: 110%; right: 0; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid #eaeaea; min-width: 160px; overflow: hidden; z-index: 1000; }
+        .profile-menu:hover .profile-dropdown { display: block; } /* Shows menu on hover */
+        
+        .dropdown-item { padding: 12px 15px; display: block; text-decoration: none; color: #444; font-size: 14px; font-weight: 500; transition: 0.2s; border-bottom: 1px solid #f8f9fa; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #f4f7f6; color: #4b6bfb; }
+        .dropdown-logout { color: #dc3545; }
+        .dropdown-logout:hover { background: #fdeaea; color: #dc3545; }
+
     </style>
     @yield('styles')
 </head>
@@ -324,14 +340,29 @@
                 <button class="sidebar-toggle" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
-                <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
             </div>
+            
             <div class="topbar-right">
-                <div class="user-chip">
+                <div class="profile-menu">
                     <div class="user-avatar">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'R', 0, 1)) }}
+                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                     </div>
-                    {{ auth()->user()->name ?? 'Researcher' }}
+                    
+                    <div class="profile-name">
+                        {{ auth()->user()->name ?? 'User' }} 
+                        <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 5px; color: #888;"></i>
+                    </div>
+                    
+                    <div class="profile-dropdown">
+                        <a href="/profile" class="dropdown-item"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                        
+                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="dropdown-item dropdown-logout" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit;">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </header>

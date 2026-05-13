@@ -9,7 +9,12 @@ class TestSchedule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'time'];
+    protected $fillable = ['date', 'time', 'user_id'];
+
+    public function researcher()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     // ADD THIS FUNCTION: A schedule can have many assigned test sessions
     public function testSessions()

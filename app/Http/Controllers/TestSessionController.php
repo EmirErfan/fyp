@@ -29,6 +29,9 @@ class TestSessionController extends Controller
         $testSessions = TestSession::whereHas('testSchedule', function ($query) {
             $query->whereDate('date', '>=', now()->toDateString());
         })
+        ->when(auth()->user()->role === 'researcher', function ($query) {
+            $query->where('user_id', auth()->id());
+        })
         ->when($search, function ($query) use ($search, $searchId) {
             $query->whereHas('participant', function ($q) use ($search, $searchId) {
                 $q->where('name', 'like', "%{$search}%")
@@ -59,6 +62,10 @@ class TestSessionController extends Controller
         // Notice how many tables we are pulling from at once!
         $session = TestSession::with(['participant', 'testSchedule', 'test', 'result', 'assessments'])->findOrFail($id);
 
+        if (auth()->user()->role === 'researcher' && $session->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         // We split the assessments into Pre and Post so it's easy to display
         $preTest = $session->assessments->where('type', 'pre')->first();
         $postTest = $session->assessments->where('type', 'post')->first();
@@ -68,13 +75,17 @@ class TestSessionController extends Controller
 
     public function create()
     {
-        // 1. Renamed to $schedules to match what your HTML expects!
-        $schedules = \App\Models\TestSchedule::whereDate('date', '>=', now()->toDateString())
-                                             ->orderBy('date', 'asc')
-                                             ->get();
+        $schedulesQuery = \App\Models\TestSchedule::whereDate('date', '>=', now()->toDateString())
+                                                  ->orderBy('date', 'asc');
+        $participantsQuery = \App\Models\Participant::query();
 
-        // 2. Get all participants
-        $participants = \App\Models\Participant::all();
+        if (auth()->user()->role === 'researcher') {
+            $schedulesQuery->where('user_id', auth()->id());
+            $participantsQuery->where('user_id', auth()->id());
+        }
+
+        $schedules = $schedulesQuery->get();
+        $participants = $participantsQuery->get();
         
         // 3. Get all tests
         $tests = \App\Models\Test::all(); 
@@ -93,21 +104,18 @@ class TestSessionController extends Controller
             'test_id' => 'required|exists:tests,id',
         ]);
 
-        // 2. CLEVER TRICK: Since we don't have a login system yet, we need a "Researcher".
-        // This checks if a user exists. If not, it creates a dummy researcher for us!
-        $researcher = User::first();
-        if (!$researcher) {
-            $researcher = User::create([
-                'name' => 'Dr. Smith (Test Researcher)',
-                'email' => 'researcher@test.com',
-                'password' => bcrypt('password'),
-                'role' => 'Researcher'
-            ]);
+        $schedule = \App\Models\TestSchedule::findOrFail($request->test_schedule_id);
+        $participant = \App\Models\Participant::findOrFail($request->participant_id);
+
+        if (auth()->user()->role === 'researcher') {
+            if ($schedule->user_id !== auth()->id() || $participant->user_id !== auth()->id()) {
+                abort(403);
+            }
         }
 
         // 3. Create the massive link in the pivot table!
         TestSession::create([
-            'user_id' => $researcher->id,
+            'user_id' => auth()->id(),
             'test_schedule_id' => $request->test_schedule_id,
             'participant_id' => $request->participant_id,
             'test_id' => $request->test_id,
@@ -120,6 +128,11 @@ class TestSessionController extends Controller
     public function storeRecordings(Request $request, $id)
     {
         try {
+            $session = TestSession::findOrFail($id);
+            if (auth()->user()->role === 'researcher' && $session->user_id !== auth()->id()) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+            }
+
             // 1. Check for the video
             if (!$request->hasFile('face_video')) {
                 return response()->json(['status' => 'error', 'message' => 'Video missing.'], 400);

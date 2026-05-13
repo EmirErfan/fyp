@@ -61,6 +61,18 @@
                 <input type="date" id="date_joined" name="date_joined" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}" required>
             </div>
 
+            @if(auth()->user()->role === 'admin')
+            <div class="form-group">
+                <label for="user_id">Assign to Researcher</label>
+                <select id="user_id" name="user_id">
+                    <option value="">-- No Assignment (Admin Only) --</option>
+                    @foreach($researchers as $researcher)
+                        <option value="{{ $researcher->id }}" {{ auth()->id() == $researcher->id ? 'selected' : '' }}>{{ $researcher->name }} ({{ ucfirst($researcher->role) }})</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+
             <button type="submit" class="btn-submit">Register Participant</button>
         </form>
     </div>

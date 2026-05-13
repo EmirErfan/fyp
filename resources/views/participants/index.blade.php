@@ -35,7 +35,13 @@
 
     <div class="table-section">
         <div class="table-header">
-            <h2>Participants Management</h2>
+            <h2>
+                Participants Management
+                @if(isset($researcherId) && $researcherId)
+                    <span style="font-size: 14px; font-weight: normal; color: #666; margin-left: 10px;">(Filtered by Researcher)</span>
+                    <a href="/participants" style="font-size: 12px; color: #4b6bfb; margin-left: 5px; text-decoration: none;">Clear Filter</a>
+                @endif
+            </h2>
             <div class="header-actions">
                 <a href="/participants/create" class="btn-primary"><i class="fas fa-plus"></i> Add Participant</a>
             </div>
@@ -62,6 +68,9 @@
                             <th>Age</th>
                             <th>Gender</th>
                             <th>Date Joined</th>
+                            @if(auth()->user()->role === 'admin')
+                            <th>Researcher</th>
+                            @endif
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -71,10 +80,24 @@
                                 <td><strong>#P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }}</strong></td>
                                 <td>{{ $participant->name }}</td>
                                 <td>{{ $participant->age }}</td>
-                                <td>{{ $participant->gender }}</td>
+                                <td>{{ ucfirst($participant->gender) }}</td>
                                 <td>{{ \Carbon\Carbon::parse($participant->date_joined)->format('d/m/Y') }}</td>
+                                @if(auth()->user()->role === 'admin')
                                 <td>
+                                    @if($participant->researcher)
+                                        <span style="background: #f0f9ff; color: #0284c7; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">{{ $participant->researcher->name }}</span>
+                                    @else
+                                        <span style="color: #999; font-style: italic; font-size: 0.85rem;">Unassigned</span>
+                                    @endif
+                                </td>
+                                @endif
+                                <td style="display: flex; gap: 8px;">
                                     <a href="/participants/{{ $participant->id }}/edit" class="action-btn">Edit</a>
+                                    <form action="/participants/{{ $participant->id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this participant?');" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn" style="color: #dc3545; border-color: #f8d7da; background: #fff; cursor: pointer;">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

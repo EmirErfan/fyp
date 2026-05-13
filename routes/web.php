@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/participants', [ParticipantController::class, 'store']);
     Route::get('/participants/{id}/edit', [ParticipantController::class, 'edit']);
     Route::put('/participants/{id}', [ParticipantController::class, 'update']);
+    Route::delete('/participants/{id}', [ParticipantController::class, 'destroy']);
 
     // DATA EXPORT
     Route::get('/export', [ExportController::class, 'index']);
@@ -82,4 +83,7 @@ Route::middleware('auth')->group(function () {
     // FINAL RESULT SCREEN
     Route::get('/test-sessions/{id}/result-summary', [AssessmentController::class, 'showResultSummary']);
 
+    // PROFILE
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit']);
+    Route::post('/profile', [App\Http\Controllers\ProfileController::class, 'update']);
 });
