@@ -63,10 +63,11 @@
             align-items: center;
             justify-content: flex-start;
             gap: 0.55rem;
-            padding: 1.5rem 1.5rem 1.25rem;
+            padding: 0 1.5rem;
             border-bottom: 1px solid var(--gray-6);
             text-decoration: none;
-            min-height: 60px;
+            height: 70px; /* Locked to exactly match topbar */
+            box-sizing: border-box;
         }
         .brand-text {
             font-size: 1.1rem;
@@ -154,17 +155,18 @@
             top: 0;
             left: var(--sidebar-w);
             right: 0;
-            height: 60px;
+            height: 70px;
             background: rgba(255,255,255,0.92);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--gray-6);
+            border-bottom: 1px solid var(--gray-6); /* Perfectly matches sidebar border */
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 2rem;
             z-index: 100;
             transition: left 0.3s ease;
+            box-sizing: border-box;
         }
         .topbar-title {
             font-size: 0.9rem;
@@ -221,11 +223,11 @@
             transition: margin-left 0.3s ease;
         }
         .main-content {
-            margin-top: 60px;
+            margin-top: 70px; /* Adjusted to 70px to match new topbar height */
             flex: 1;
             padding: 2.5rem;
             overflow-y: auto;
-            height: calc(100vh - 60px);
+            height: calc(100vh - 70px); /* Adjusted to 70px so bottom doesn't cut off */
         }
 
         /* ── DESKTOP COLLAPSED STATE ── */
@@ -239,7 +241,7 @@
             body.sidebar-collapsed .nav-text,
             body.sidebar-collapsed .logout-text { display: none; }
             
-            body.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 1.5rem 0; }
+            body.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 0; }
             body.sidebar-collapsed .sidebar-brand::before {
                 content: "S";
                 font-size: 1.4rem;
@@ -273,7 +275,7 @@
         .profile-name { font-size: 14px; font-weight: 600; color: #333; }
         
         .profile-dropdown { display: none; position: absolute; top: 110%; right: 0; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid #eaeaea; min-width: 160px; overflow: hidden; z-index: 1000; }
-        .profile-menu:hover .profile-dropdown { display: block; } /* Shows menu on hover */
+        .profile-menu:hover .profile-dropdown { display: block; } 
         
         .dropdown-item { padding: 12px 15px; display: block; text-decoration: none; color: #444; font-size: 14px; font-weight: 500; transition: 0.2s; border-bottom: 1px solid #f8f9fa; }
         .dropdown-item:last-child { border-bottom: none; }
@@ -281,7 +283,7 @@
         .dropdown-logout { color: #dc3545; }
         .dropdown-logout:hover { background: #fdeaea; color: #dc3545; }
 
-    </style>
+</style>
     @yield('styles')
 </head>
 <body class="sidebar-collapsed">
