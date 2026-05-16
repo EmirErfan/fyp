@@ -45,7 +45,7 @@
     <div class="test-container" id="game-screen">
         <div class="header">
             <div class="title">TSST Arithmetic Task</div>
-            <div class="timer" id="timer-display">01:00</div> 
+            <div class="timer" id="timer-display">03:00</div> 
         </div>
 
         <div id="start-screen">
@@ -73,6 +73,8 @@
             <span style="font-size: 16px; color: #666; font-weight: normal; display: block; margin-top: 15px;">Please wait. You will be redirected automatically.</span>
         </div>
     </div>
+
+    <button id="mute-btn" onclick="toggleMute()" class="hidden" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">🔇 Mute Alarm</button>
 
     <script>
         // --- HARSH PSYCHOLOGICAL FEEDBACK ARRAYS ---
@@ -109,10 +111,20 @@
         ];
 
         let isPlaying = false;
-        // NOTE: Change this back to 240 (4 minutes) for the real experiment!
-        let globalTimeRemaining = 60; 
+
+        let globalTimeRemaining = 180; 
         let idleTimer; 
         
+        let isMuted = false;
+        let alarmInterval = null;
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('mute-btn');
+            btn.innerText = isMuted ? "🔊 Unmute Alarm" : "🔇 Mute Alarm";
+            btn.style.backgroundColor = isMuted ? "#6c757d" : "#dc3545";
+        }
+
         // --- MATH LOGIC SETTINGS ---
         const STARTING_NUMBER = Math.floor(Math.random() * 9000) + 1000;
         const possibleSteps = [11, 13, 17, 19];
@@ -142,6 +154,28 @@
 
         // --- AUDIO FEEDBACK SETUP ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playAlarmTick() {
+            if (isMuted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(900, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.15);
+        }
 
         function playSound(type) {
             if (audioCtx.state === 'suspended') {
@@ -280,6 +314,17 @@
                 // Force red timer text in the last 30 seconds for extra stress
                 if (globalTimeRemaining <= 30) {
                     document.getElementById('timer-display').style.backgroundColor = '#dc3545';
+                }
+
+                if (globalTimeRemaining <= 60 && !alarmInterval) {
+                    document.getElementById('mute-btn').classList.remove('hidden');
+                    alarmInterval = setInterval(() => {
+                        if (isPlaying && globalTimeRemaining > 0) {
+                            playAlarmTick();
+                        } else {
+                            clearInterval(alarmInterval);
+                        }
+                    }, 400); // Fast beeping!
                 }
 
                 if (globalTimeRemaining <= 0) {

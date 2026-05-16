@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
+    // --- BASIC PROFILE SETTINGS ---
     public function edit()
     {
         return view('profile.edit');
@@ -17,22 +18,36 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'old_password' => 'nullable|string|required_with:password',
-            'password' => 'nullable|min:8|confirmed',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
-
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
-
         $user->save();
 
         return back()->with('success', 'Profile updated successfully!');
+    }
+
+    // --- PASSWORD SETTINGS ---
+    public function changePassword()
+    {
+        return view('profile.password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        // 'current_password' is a built-in Laravel rule that checks against the database!
+        $request->validate([
+            'current_password' => 'required|current_password',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return back()->with('success', 'Password successfully updated!');
     }
 }

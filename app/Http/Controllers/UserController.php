@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\TestSession; // <-- ADD THIS IMPORT
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -39,5 +40,16 @@ class UserController extends Controller
         ]);
 
         return redirect('/users')->with('success', 'User account created successfully.');
+    }
+
+    public function viewStaffSessions($id)
+    {
+        $staffMember = User::findOrFail($id);
+        $sessions = TestSession::with(['participant', 'test'])
+            ->where('user_id', $id) 
+            ->latest()
+            ->get();
+
+        return view('users.sessions', compact('staffMember', 'sessions'));
     }
 }

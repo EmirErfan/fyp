@@ -79,7 +79,7 @@
                                 </td>
                                 <td>
                                     @if(!$session->result)
-                                        <a href="/test-sessions/{{ $session->id }}/consent" class="start-test-btn" target="_blank">Start Test</a>
+                                        <a href="/test-sessions/{{ $session->id }}/consent" class="start-test-btn">Start Test</a>
                                     @else
                                         <a href="/test-sessions/{{ $session->id }}" class="action-btn">View Report</a>
                                     @endif

@@ -53,8 +53,8 @@
                         <td style="padding: 1rem; color: #64748b; font-size: 0.95rem;">{{ $user->created_at->format('M d, Y') }}</td>
                         <td style="padding: 1rem;">
                             @if($user->role === 'researcher')
-                            <a href="/participants?researcher_id={{ $user->id }}" style="display: inline-flex; align-items: center; gap: 0.25rem; background: #f8fafc; border: 1px solid #cbd5e1; color: #475569; padding: 0.4rem 0.75rem; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-                                <i class="fas fa-users"></i> View Participants
+                            <a href="{{ url('/admin/staff/' . $user->id . '/sessions') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #f8f9fa; border: 1px solid #ddd; color: #555; padding: 0.4rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: 0.2s;">
+                                View Sessions
                             </a>
                             @endif
                         </td>

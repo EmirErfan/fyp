@@ -66,15 +66,28 @@
         <span style="font-size: 16px; color: #666; font-weight: normal; margin-top: 15px; display: block;">Please wait. You will be redirected automatically.</span>
     </div>
 
+    <button id="mute-btn" onclick="toggleMute()" class="hidden" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">🔇 Mute Alarm</button>
+
     <script>
         const colors = [
             { name: 'RED', value: 'red', hex: '#dc3545' },
             { name: 'BLUE', value: 'blue', hex: '#0d6efd' }
         ];
 
+        const wordList = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE', 'WHITE', 'BLACK', 'GRAY', 'BROWN'];
+
         let globalTimeRemaining = 120; 
         let isPlaying = false;
         let currentInkColor = '';
+        let isMuted = false;
+        let alarmInterval = null;
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('mute-btn');
+            btn.innerText = isMuted ? "🔊 Unmute Alarm" : "🔇 Mute Alarm";
+            btn.style.backgroundColor = isMuted ? "#6c757d" : "#dc3545";
+        }
         let wordStartTime = 0;
         let questionTimerInterval;
         let questionTimeRemaining = 0;
@@ -89,6 +102,28 @@
 
         // --- AUDIO FEEDBACK SETUP ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playAlarmTick() {
+            if (isMuted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(900, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.15);
+        }
 
         function playSound(type) {
             if (audioCtx.state === 'suspended') {
@@ -192,6 +227,21 @@
                 let seconds = globalTimeRemaining % 60;
                 document.getElementById('timer-display').innerText = `0${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
+                if (globalTimeRemaining <= 30) {
+                    document.getElementById('timer-display').style.backgroundColor = '#dc3545';
+                }
+
+                if (globalTimeRemaining <= 60 && !alarmInterval) {
+                    document.getElementById('mute-btn').classList.remove('hidden');
+                    alarmInterval = setInterval(() => {
+                        if (isPlaying && globalTimeRemaining > 0) {
+                            playAlarmTick();
+                        } else {
+                            clearInterval(alarmInterval);
+                        }
+                    }, 400); // Fast beeping!
+                }
+
                 if (globalTimeRemaining <= 0) {
                     clearInterval(globalTimer);
                     endTest();
@@ -226,16 +276,14 @@
         }
 
         function nextWord() {
-            let textObj = colors[Math.floor(Math.random() * colors.length)];
-            let otherColors = colors.filter(c => c.value !== textObj.value);
-            let colorObj = otherColors[Math.floor(Math.random() * otherColors.length)];
-            
+            let randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+            let availableColors = colors.filter(c => c.name !== randomWord);
+            let colorObj = availableColors[Math.floor(Math.random() * availableColors.length)];
             currentInkColor = colorObj.value;
             let display = document.getElementById('word-display');
-            display.innerText = textObj.name;
+            display.innerText = randomWord;
             display.style.color = colorObj.hex;
             wordStartTime = Date.now();
-
             startQuestionTimer();
         }
 

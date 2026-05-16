@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', [\App\Http\Controllers\UserController::class, 'index']);
         Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create']);
         Route::post('/users', [\App\Http\Controllers\UserController::class, 'store']);
+        Route::get('/admin/staff/{id}/sessions', [\App\Http\Controllers\UserController::class, 'viewStaffSessions']);
     });
 
     // TEST SESSIONS & ASSIGNMENTS
@@ -86,4 +87,10 @@ Route::middleware('auth')->group(function () {
     // PROFILE
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit']);
     Route::post('/profile', [App\Http\Controllers\ProfileController::class, 'update']);
+
+    // PASSWORD
+    Route::get('/password/change', [App\Http\Controllers\ProfileController::class, 'changePassword']);
+    Route::post('/password/change', [App\Http\Controllers\ProfileController::class, 'updatePassword']);
+
+    
 });

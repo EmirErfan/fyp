@@ -11,7 +11,7 @@
         </div>
         <div>
             <h2 style="font-size: 1.25rem; font-weight: 700; color: #111; margin-bottom: 0.25rem;">Research Data Export</h2>
-            <p style="color: #666; font-size: 0.9rem;">Export all participant session data, including performance metrics and DESS scale scores.</p>
+            <p style="color: #666; font-size: 0.9rem;">Export participant session data, including performance metrics, video links, and DESS scale scores.</p>
         </div>
     </div>
 
@@ -28,20 +28,47 @@
                 <i class="fas fa-check-circle" style="color: #10b981;"></i> Accuracy & Reaction Times
             </li>
             <li style="display: flex; align-items: center; gap: 0.5rem; color: #555; font-size: 0.9rem;">
+                <i class="fas fa-check-circle" style="color: #10b981;"></i> Session Video Links
+            </li>
+            <li style="display: flex; align-items: center; gap: 0.5rem; color: #555; font-size: 0.9rem;">
                 <i class="fas fa-check-circle" style="color: #10b981;"></i> Raw Pre/Post DESS Scores
             </li>
         </ul>
     </div>
 
-    <div style="display: flex; gap: 1rem;">
-        <a href="{{ url('/export/csv') }}" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background 0.2s, transform 0.1s;">
-            <i class="fas fa-download"></i> Download CSV Report
-        </a>
-    </div>
+    <form action="{{ url('/export/csv') }}" method="GET" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <div>
+            <label for="participant_id" style="display: block; font-weight: 600; font-size: 0.9rem; color: #333; margin-bottom: 0.5rem;">Filter by Participant</label>
+            <select name="participant_id" id="participant_id" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; font-size: 0.95rem;">
+                <option value="all">All Participants</option>
+                @foreach($participants as $participant)
+                    <option value="{{ $participant->id }}">{{ $participant->name }} (#P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }})</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+                <label for="start_date" style="display: block; font-weight: 600; font-size: 0.9rem; color: #333; margin-bottom: 0.5rem;">Start Date</label>
+                <input type="date" name="start_date" id="start_date" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; font-size: 0.95rem;">
+            </div>
+            <div style="flex: 1;">
+                <label for="end_date" style="display: block; font-weight: 600; font-size: 0.9rem; color: #333; margin-bottom: 0.5rem;">End Date</label>
+                <input type="date" name="end_date" id="end_date" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; font-size: 0.95rem;">
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+            <button type="submit" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.85rem 1.75rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: inherit;">
+                <i class="fas fa-download"></i> Generate CSV Report
+            </button>
+        </div>
+    </form>
 </div>
 
 <style>
-    a:hover { background: #1557b0 !important; }
-    a:active { transform: scale(0.98); }
+    button[type="submit"]:hover { background: #1557b0 !important; }
+    button[type="submit"]:active { transform: scale(0.98); }
 </style>
 @endsection

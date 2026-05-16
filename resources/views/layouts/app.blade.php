@@ -358,6 +358,8 @@
                     <div class="profile-dropdown">
                         <a href="/profile" class="dropdown-item"><i class="fas fa-user-edit"></i> Edit Profile</a>
                         
+                        <a href="/password/change" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
+                        
                         <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                             @csrf
                             <button type="submit" class="dropdown-item dropdown-logout" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit;">

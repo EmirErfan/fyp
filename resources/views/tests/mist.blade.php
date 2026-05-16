@@ -74,10 +74,21 @@
         <span style="font-size: 16px; color: #aaa; font-weight: normal; margin-top: 15px; display: block;">Please wait. You will be redirected automatically.</span>
     </div>
 
+    <button id="mute-btn" onclick="toggleMute()" class="hidden" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">🔇 Mute Alarm</button>
+
     <script>
         let globalTimeRemaining = 180; // 3 Minutes
         let isPlaying = false;
         let expectedAnswer = 0;
+        let isMuted = false;
+        let alarmInterval = null;
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('mute-btn');
+            btn.innerText = isMuted ? "🔊 Unmute Alarm" : "🔇 Mute Alarm";
+            btn.style.backgroundColor = isMuted ? "#6c757d" : "#dc3545";
+        }
         let questionStartTime = 0;
         
         let totalAttempts = 0;
@@ -96,6 +107,28 @@
 
         // --- AUDIO FEEDBACK SETUP ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playAlarmTick() {
+            if (isMuted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(900, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.15);
+        }
 
         function playSound(type) {
             if (audioCtx.state === 'suspended') {
@@ -206,6 +239,21 @@
                 let minutes = Math.floor(globalTimeRemaining / 60);
                 let seconds = globalTimeRemaining % 60;
                 document.getElementById('timer-display').innerText = `0${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                if (globalTimeRemaining <= 30) {
+                    document.getElementById('timer-display').style.backgroundColor = '#ff4d4d'; // Brighter red
+                }
+
+                if (globalTimeRemaining <= 60 && !alarmInterval) {
+                    document.getElementById('mute-btn').classList.remove('hidden');
+                    alarmInterval = setInterval(() => {
+                        if (isPlaying && globalTimeRemaining > 0) {
+                            playAlarmTick();
+                        } else {
+                            clearInterval(alarmInterval);
+                        }
+                    }, 400); // Fast beeping!
+                }
 
                 if (globalTimeRemaining <= 0) {
                     clearInterval(globalTimer);
