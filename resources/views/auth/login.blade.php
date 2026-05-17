@@ -40,6 +40,31 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #926A6F; 
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-4px);
+            color: #6a4a4e;
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
         }
 
         .left-panel-inner {
@@ -254,6 +279,14 @@
     
     <!-- LEFT PANEL -->
     <div class="left-panel">
+        
+        <a href="/" class="back-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+        </a>
+
         <div class="left-panel-inner">
             <h1>Hello!</h1>
             

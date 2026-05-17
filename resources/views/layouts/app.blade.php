@@ -7,387 +7,359 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --black:   #0d0d0d;
-            --gray-1:  #1a1a1a;
-            --gray-2:  #333;
-            --gray-3:  #555;
-            --gray-4:  #888;
-            --gray-5:  #bbb;
-            --gray-6:  #e2e2e2;
-            --gray-7:  #f5f5f5;
-            --white:   #ffffff;
-            --blue:    #1a73e8;
-            --blue-lt: #e8f0fe;
-            --blue-md: #4285f4;
-            --sans:    'Inter', system-ui, sans-serif;
-            --sidebar-w: 256px;
-            --sidebar-collapsed-w: 80px;
+            --pink:        #c8184a;
+            --pink-deep:   #a01039;
+            --pink-soft:   #f0d0da;
+            --pink-lt:     #fdf0f3;
+            --pink-mid:    rgba(200, 24, 74, 0.12);
+
+            --white:       #ffffff;
+            --off-white:   #f8f8fa;
+            --gray-1:      #f3f3f6;
+            --gray-2:      #e6e6ec;
+            --gray-3:      #d0d0d8;
+            --gray-4:      #9898a8;
+            --gray-5:      #606070;
+
+            --text-primary:   #1a1a28;
+            --text-secondary: #5a5a70;
+            --text-muted:     #9898a8;
+
+            --sans: 'Sora', system-ui, sans-serif;
+            --mono: 'DM Mono', monospace;
+
+            --navbar-h: 62px;
+            --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.09);
+            --shadow-pink: 0 4px 16px rgba(200,24,74,0.25);
         }
 
         html, body { height: 100%; }
 
         body {
             font-family: var(--sans);
-            background: var(--gray-7);
-            color: var(--black);
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            width: var(--sidebar-w);
-            min-width: var(--sidebar-w);
-            height: 100vh;
-            background: var(--white);
-            border-right: 1px solid var(--gray-6);
+            background: var(--off-white);
+            color: var(--text-primary);
             display: flex;
             flex-direction: column;
-            position: fixed;
-            top: 0; left: 0;
-            z-index: 200;
-            transition: width 0.3s ease, transform 0.3s ease;
             overflow-x: hidden;
-            overflow-y: auto;
         }
 
-        .sidebar-brand {
+        /* ── NAVBAR ── */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--navbar-h);
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-2);
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 0.55rem;
-            padding: 0 1.5rem;
-            border-bottom: 1px solid var(--gray-6);
-            text-decoration: none;
-            height: 70px; /* Locked to exactly match topbar */
-            box-sizing: border-box;
-        }
-        .brand-text {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--black);
-            letter-spacing: -0.02em;
-            white-space: nowrap;
+            padding: 0 2rem;
+            z-index: 300;
+            box-shadow: var(--shadow-sm);
         }
 
-        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; }
-
-        .menu-label {
-            font-size: 0.67rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--gray-4);
-            padding: 0.9rem 0.75rem 0.4rem;
-            white-space: nowrap;
-        }
-
-        .nav-item {
+        .nav-brand {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.85rem;
-            border-radius: 8px;
+            gap: 0.6rem;
             text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--gray-3);
-            transition: background 0.15s, color 0.15s;
-            margin-bottom: 2px;
-            white-space: nowrap;
-        }
-        .nav-item i {
-            width: 18px;
-            font-size: 1rem;
-            text-align: center;
-            color: var(--gray-5);
-            transition: color 0.15s;
+            margin-right: 2.5rem;
             flex-shrink: 0;
         }
-        .nav-item:hover {
-            background: var(--gray-7);
-            color: var(--black);
+        .brand-icon {
+            width: 32px; height: 32px;
+            background: var(--pink);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+            color: #fff;
+            box-shadow: var(--shadow-pink);
+            flex-shrink: 0;
         }
-        .nav-item:hover i { color: var(--gray-3); }
-        .nav-item.active {
-            background: var(--blue-lt);
-            color: var(--blue);
-            font-weight: 600;
-        }
-        .nav-item.active i { color: var(--blue); }
-
-        .sidebar-footer {
-            padding: 1rem 0.75rem;
-            border-top: 1px solid var(--gray-6);
-        }
-        .logout-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.85rem;
-            width: 100%;
-            border: none;
-            background: none;
-            font-family: var(--sans);
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--gray-3);
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background 0.15s, color 0.15s;
-            text-align: left;
+        .brand-text {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
             white-space: nowrap;
         }
-        .logout-btn i { width: 18px; font-size: 0.95rem; text-align: center; color: var(--gray-5); flex-shrink: 0;}
-        .logout-btn:hover { background: #fff0f0; color: #dc2626; }
-        .logout-btn:hover i { color: #dc2626; }
+        .brand-text em { font-style: normal; color: var(--pink); }
 
-        /* ── TOPBAR ── */
-        .topbar {
-            position: fixed;
-            top: 0;
-            left: var(--sidebar-w);
-            right: 0;
-            height: 70px;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--gray-6); /* Perfectly matches sidebar border */
+        /* Nav links */
+        .nav-links {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            z-index: 100;
-            transition: left 0.3s ease;
-            box-sizing: border-box;
+            gap: 0.1rem;
+            flex: 1;
         }
-        .topbar-title {
-            font-size: 0.9rem;
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .nav-link i {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            transition: color 0.15s;
+            width: 14px; text-align: center;
+        }
+        .nav-link:hover { background: var(--gray-1); color: var(--text-primary); }
+        .nav-link:hover i { color: var(--gray-5); }
+        .nav-link.active {
+            background: var(--pink-lt);
+            color: var(--pink);
             font-weight: 600;
-            color: var(--black);
-            letter-spacing: -0.01em;
         }
-        .topbar-right {
+        .nav-link.active i { color: var(--pink); }
+
+        .nav-sep {
+            width: 1px; height: 18px;
+            background: var(--gray-2);
+            margin: 0 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Right side */
+        .nav-right {
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            margin-left: auto;
+            flex-shrink: 0;
         }
-        .user-chip {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.35rem 0.75rem;
-            background: var(--gray-7);
-            border: 1px solid var(--gray-6);
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--gray-2);
-        }
-        .user-avatar {
-            width: 24px; height: 24px;
-            background: var(--black);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: white;
-        }
-        .sidebar-toggle {
+
+        .nav-toggle {
+            display: none;
             background: none;
             border: none;
-            font-size: 1.2rem;
-            color: var(--gray-4);
+            font-size: 1.1rem;
+            color: var(--text-secondary);
             cursor: pointer;
-            padding: 0.25rem;
-            display: block;
-            transition: color 0.2s;
+            padding: 0.3rem;
+            margin-right: 0.25rem;
         }
-        .sidebar-toggle:hover { color: var(--black); }
 
-        /* ── MAIN CONTENT ── */
-        .main-wrapper {
-            margin-left: var(--sidebar-w);
-            flex: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        /* Profile */
+        .profile-menu {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gray-1);
+            border: 1px solid var(--gray-2);
+            padding: 5px 12px 5px 5px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+        }
+        .profile-dropdown.show { 
+            display: block; 
+        }
+        .profile-avatar {
+            background: var(--pink);
+            color: white;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 11px; flex-shrink: 0;
+        }
+        .profile-name { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+        .profile-chevron {
+            font-size: 9px; color: var(--text-muted); margin-left: 2px;
+            transition: transform 0.2s;
+        }
+        .profile-menu:hover .profile-chevron { transform: rotate(180deg); }
+
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px); right: 0;
+            background: var(--white);
+            border: 1px solid var(--gray-2);
+            box-shadow: var(--shadow-md);
+            border-radius: 12px;
+            min-width: 175px;
             overflow: hidden;
-            transition: margin-left 0.3s ease;
+            z-index: 1000;
         }
+        .profile-menu:hover .profile-dropdown { display: block; }
+        .dropdown-item {
+            padding: 10px 14px;
+            display: flex; align-items: center; gap: 9px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.82rem; font-weight: 500;
+            transition: background 0.12s, color 0.12s;
+            border-bottom: 1px solid var(--gray-1);
+            cursor: pointer;
+            background: none;
+            border-left: none; border-right: none; border-top: none;
+            width: 100%; text-align: left;
+            font-family: var(--sans);
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item i { width: 14px; color: var(--text-muted); font-size: 0.8rem; }
+        .dropdown-item:hover { background: var(--gray-1); color: var(--text-primary); }
+        .dropdown-logout { color: var(--pink); }
+        .dropdown-logout i { color: var(--pink) !important; }
+        .dropdown-logout:hover { background: var(--pink-lt) !important; color: var(--pink-deep) !important; }
+
+        /* Mobile drawer */
+        .mobile-drawer {
+            display: none;
+            position: fixed;
+            top: var(--navbar-h); left: 0; right: 0;
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-2);
+            padding: 1rem 1.5rem 1.25rem;
+            flex-direction: column;
+            gap: 0.2rem;
+            z-index: 200;
+            box-shadow: var(--shadow-md);
+            animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+        .mobile-drawer.open { display: flex; }
+        .mobile-drawer .nav-link { padding: 0.65rem 1rem; font-size: 0.88rem; }
+        .mobile-sep { height: 1px; background: var(--gray-2); margin: 0.4rem 0; }
+
+        /* ── MAIN ── */
         .main-content {
-            margin-top: 70px; /* Adjusted to 70px to match new topbar height */
+            margin-top: var(--navbar-h);
             flex: 1;
-            padding: 2.5rem;
-            overflow-y: auto;
-            height: calc(100vh - 70px); /* Adjusted to 70px so bottom doesn't cut off */
+            padding: 2.25rem 2.5rem;
+            min-height: calc(100vh - var(--navbar-h));
         }
 
-        /* ── DESKTOP COLLAPSED STATE ── */
-        @media (min-width: 769px) {
-            body.sidebar-collapsed .sidebar { width: var(--sidebar-collapsed-w); min-width: var(--sidebar-collapsed-w); }
-            body.sidebar-collapsed .main-wrapper { margin-left: var(--sidebar-collapsed-w); }
-            body.sidebar-collapsed .topbar { left: var(--sidebar-collapsed-w); }
-            
-            body.sidebar-collapsed .brand-text,
-            body.sidebar-collapsed .menu-label,
-            body.sidebar-collapsed .nav-text,
-            body.sidebar-collapsed .logout-text { display: none; }
-            
-            body.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 0; }
-            body.sidebar-collapsed .sidebar-brand::before {
-                content: "S";
-                font-size: 1.4rem;
-                font-weight: 800;
-                color: var(--blue);
-            }
-
-            body.sidebar-collapsed .nav-item { justify-content: center; padding: 0.8rem 0; }
-            body.sidebar-collapsed .nav-item i { margin: 0; font-size: 1.2rem; }
-            
-            body.sidebar-collapsed .logout-btn { justify-content: center; padding: 0.8rem 0; }
-            body.sidebar-collapsed .logout-btn i { margin: 0; font-size: 1.2rem; }
-            
-            body.sidebar-collapsed .menu-label { padding: 1rem 0 0.5rem; text-align: center; }
-            body.sidebar-collapsed .menu-label::after { content: "•••"; letter-spacing: 2px; }
-        }
-
-        /* ── RESPONSIVE MOBILE ── */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.1); }
-            .main-wrapper { margin-left: 0; }
-            .topbar { left: 0; }
+        @media (max-width: 900px) {
+            .nav-links { display: none; }
+            .nav-toggle { display: block; }
             .main-content { padding: 1.5rem; }
         }
-
-        /* Profile Dropdown Styles*/
-        .profile-menu { position: relative; display: inline-flex; align-items: center; gap: 10px; background: #f4f7f6; padding: 6px 15px 6px 6px; border-radius: 30px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .profile-menu:hover { background: #eef2ff; border-color: #d0d7f9; }
-        .profile-avatar { background: #212529; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
-        .profile-name { font-size: 14px; font-weight: 600; color: #333; }
-        
-        .profile-dropdown { display: none; position: absolute; top: 110%; right: 0; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid #eaeaea; min-width: 160px; overflow: hidden; z-index: 1000; }
-        .profile-menu:hover .profile-dropdown { display: block; } 
-        
-        .dropdown-item { padding: 12px 15px; display: block; text-decoration: none; color: #444; font-size: 14px; font-weight: 500; transition: 0.2s; border-bottom: 1px solid #f8f9fa; }
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: #f4f7f6; color: #4b6bfb; }
-        .dropdown-logout { color: #dc3545; }
-        .dropdown-logout:hover { background: #fdeaea; color: #dc3545; }
-
-</style>
+    </style>
     @yield('styles')
 </head>
-<body class="sidebar-collapsed">
+<body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-        <a href="/dashboard" class="sidebar-brand">
-            <span class="brand-text">Stress System</span>
+    <nav class="navbar">
+        <button class="nav-toggle" onclick="toggleMobileNav()"><i class="fas fa-bars"></i></button>
+
+        <a href="/dashboard" class="nav-brand">
+            <div class="brand-icon"><i class="fas fa-brain"></i></div>
+            <span class="brand-text">Stress<em>Lab</em></span>
         </a>
 
-        <nav class="sidebar-nav">
-            <div class="menu-label"><span class="nav-text">Main</span></div>
-            <a href="/dashboard" class="nav-item {{ Request::is('dashboard') ? 'active' : '' }}" title="Dashboard">
-                <i class="fas fa-chart-pie"></i> <span class="nav-text">Dashboard</span>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
+                <i class="fas fa-chart-pie"></i> Dashboard
             </a>
-
-            <div class="menu-label"><span class="nav-text">Research</span></div>
-            <a href="/test-sessions" class="nav-item {{ Request::is('test-sessions*') ? 'active' : '' }}" title="Test Sessions">
-                <i class="fas fa-vial"></i> <span class="nav-text">Test Sessions</span>
+            <div class="nav-sep"></div>
+            <a href="/test-sessions" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}">
+                <i class="fas fa-vial"></i> Test Sessions
             </a>
-            <a href="/schedules" class="nav-item {{ Request::is('schedules*') ? 'active' : '' }}" title="Schedules">
-                <i class="fas fa-calendar-alt"></i> <span class="nav-text">Schedules</span>
+            <a href="/schedules" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}">
+                <i class="fas fa-calendar-alt"></i> Schedules
             </a>
-
-            <div class="menu-label"><span class="nav-text">Management</span></div>
-            <a href="/participants" class="nav-item {{ Request::is('participants*') ? 'active' : '' }}" title="Participants">
-                <i class="fas fa-users"></i> <span class="nav-text">Participants</span>
+            <div class="nav-sep"></div>
+            <a href="/participants" class="nav-link {{ Request::is('participants*') ? 'active' : '' }}">
+                <i class="fas fa-users"></i> Participants
             </a>
-            <a href="/export" class="nav-item {{ Request::is('export*') ? 'active' : '' }}" title="Data Export">
-                <i class="fas fa-file-export"></i> <span class="nav-text">Data Export</span>
+            <a href="/export" class="nav-link {{ Request::is('export*') ? 'active' : '' }}">
+                <i class="fas fa-file-export"></i> Export
             </a>
-
             @if(auth()->check() && auth()->user()->role === 'admin')
-            <div class="menu-label"><span class="nav-text">System</span></div>
-            <a href="/users" class="nav-item {{ Request::is('users*') ? 'active' : '' }}" title="User Management">
-                <i class="fas fa-user-shield"></i> <span class="nav-text">User Management</span>
+            <div class="nav-sep"></div>
+            <a href="/users" class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
+                <i class="fas fa-user-shield"></i> Users
             </a>
             @endif
-        </nav>
-
-        <div class="sidebar-footer">
-            <form action="/logout" method="POST">
-                @csrf
-                <button type="submit" class="logout-btn" title="Log Out">
-                    <i class="fas fa-sign-out-alt"></i> <span class="logout-text">Log Out</span>
-                </button>
-            </form>
         </div>
-    </aside>
 
-    <!-- MAIN WRAPPER -->
-    <div class="main-wrapper">
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <div style="display:flex;align-items:center;gap:1rem;">
-                <button class="sidebar-toggle" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div class="topbar-right">
-                <div class="profile-menu">
-                    <div class="user-avatar">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                    </div>
+        <div class="nav-right">
+            <div class="profile-menu" onclick="toggleProfileMenu(event)">
+                <div class="user-avatar">
+                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                </div>
+                
+                <div class="profile-name">
+                    {{ auth()->user()->name ?? 'User' }} 
+                    <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 5px; color: #888;"></i>
+                </div>
+                
+                <div class="profile-dropdown" id="profileDropdown" onclick="event.stopPropagation()">
+                    <a href="/profile" class="dropdown-item"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                    <a href="/password/change" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
                     
-                    <div class="profile-name">
-                        {{ auth()->user()->name ?? 'User' }} 
-                        <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 5px; color: #888;"></i>
-                    </div>
-                    
-                    <div class="profile-dropdown">
-                        <a href="/profile" class="dropdown-item"><i class="fas fa-user-edit"></i> Edit Profile</a>
-                        
-                        <a href="/password/change" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
-                        
-                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
-                            @csrf
-                            <button type="submit" class="dropdown-item dropdown-logout" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit;">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </form>
-                    </div>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                        @csrf
+                        <button type="submit" class="dropdown-item dropdown-logout" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
                 </div>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <!-- CONTENT -->
-        <main class="main-content">
-            @yield('content')
-        </main>
+    <!-- MOBILE DRAWER -->
+    <div class="mobile-drawer" id="mobileDrawer">
+        <a href="/dashboard" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <div class="mobile-sep"></div>
+        <a href="/test-sessions" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-vial"></i> Test Sessions</a>
+        <a href="/schedules" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-calendar-alt"></i> Schedules</a>
+        <div class="mobile-sep"></div>
+        <a href="/participants" class="nav-link {{ Request::is('participants*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-users"></i> Participants</a>
+        <a href="/export" class="nav-link {{ Request::is('export*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-file-export"></i> Export</a>
+        @if(auth()->check() && auth()->user()->role === 'admin')
+        <div class="mobile-sep"></div>
+        <a href="/users" class="nav-link {{ Request::is('users*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-user-shield"></i> User Management</a>
+        @endif
+        <div class="mobile-sep"></div>
+        <a href="/profile" class="nav-link" onclick="closeMobileNav()"><i class="fas fa-user-edit"></i> Edit Profile</a>
+        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="nav-link dropdown-logout" style="width:100%;background:none;border:none;cursor:pointer;font-family:var(--sans);">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </form>
     </div>
 
-    <script>
-        function toggleSidebar() {
-            if (window.innerWidth <= 768) {
-                // Mobile: toggle transform
-                document.getElementById('sidebar').classList.toggle('open');
-            } else {
-                // Desktop: toggle width collapse
-                document.body.classList.toggle('sidebar-collapsed');
-            }
-        }
-    </script>
+    <main class="main-content">
+        @yield('content')
+    </main>
 
+    <script>
+        function toggleProfileMenu(event) {
+            // Prevent the click from triggering the window click listener below
+            event.stopPropagation(); 
+            // Toggle the 'show' class to hide/reveal the menu
+            document.getElementById('profileDropdown').classList.toggle('show');
+        }
+
+        // Close the dropdown if the user clicks anywhere else on the screen
+        window.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
 </body>
 </html>

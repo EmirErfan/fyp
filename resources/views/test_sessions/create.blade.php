@@ -1,75 +1,391 @@
 @extends('layouts.app')
 
-@section('title', 'New Test Session - Stress System')
+@section('title', 'New Test Session — StressLab')
 
 @section('styles')
 <style>
-    .form-container { background: #ffffff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #eaeaea; padding: 30px; max-width: 600px; margin: 0 auto; margin-top: 20px;}
-    .form-header { margin-bottom: 25px; border-bottom: 1px solid #eaeaea; padding-bottom: 15px; }
-    .form-header h2 { font-size: 20px; color: #333; margin: 0;}
-    
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; font-size: 14px; }
-    
-    select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; transition: 0.2s; font-family: inherit; color: #333; background-color: #fff; cursor: pointer;}
-    select:focus { border-color: #4b6bfb; outline: none; box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.1); }
-    
-    .btn-submit { background-color: #4b6bfb; color: white; border: none; padding: 14px 20px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-top: 10px; }
-    .btn-submit:hover { background-color: #3a56d4; }
-    
-    .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #666; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s;}
-    .back-link:hover { color: #4b6bfb; }
+    /* ── PAGE HEADER ── */
+    .page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+    .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.04em;
+        margin-bottom: 0.3rem;
+    }
+    .page-header h1 em { font-style: normal; color: var(--pink); }
+    .page-header p { font-size: 0.83rem; color: var(--text-muted); }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9px;
+        background: var(--white);
+        border: 1px solid var(--gray-2);
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+        white-space: nowrap;
+    }
+    .btn-back:hover { border-color: var(--pink-soft); background: var(--pink-lt); color: var(--pink); }
+
+    /* ── LAYOUT ── */
+    .create-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    /* ── FORM CARD ── */
+    .form-card {
+        background: var(--white);
+        border: 1px solid var(--gray-2);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .form-card-header {
+        padding: 1.1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-2);
+        background: var(--gray-1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .form-card-icon {
+        width: 32px; height: 32px;
+        background: var(--pink-lt);
+        border: 1px solid var(--pink-soft);
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.88rem;
+        color: var(--pink);
+        flex-shrink: 0;
+    }
+    .form-card-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+    }
+    .form-card-subtitle {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.1rem;
+    }
+    .form-body { padding: 1.5rem; }
+
+    /* ── FORM GROUPS ── */
+    .form-group { margin-bottom: 1.35rem; }
+    .form-group:last-of-type { margin-bottom: 0; }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.01em;
+    }
+    .form-label i {
+        width: 14px;
+        font-size: 0.78rem;
+        color: var(--pink);
+        text-align: center;
+    }
+    .required-dot {
+        width: 5px; height: 5px;
+        background: var(--pink);
+        border-radius: 50%;
+        display: inline-block;
+        margin-left: 2px;
+        flex-shrink: 0;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border: 1px solid var(--gray-2);
+        border-radius: 9px;
+        font-size: 0.85rem;
+        font-family: var(--sans);
+        color: var(--text-primary);
+        background: var(--white);
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239898a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.9rem center;
+        padding-right: 2.25rem;
+    }
+    .form-select:focus {
+        border-color: var(--pink);
+        box-shadow: 0 0 0 3px rgba(200,24,74,0.1);
+    }
+    .form-select:invalid,
+    .form-select option[value=""] { color: var(--text-muted); }
+
+    .field-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.73rem;
+        color: var(--text-muted);
+        margin-top: 0.4rem;
+    }
+    .field-hint i { font-size: 0.7rem; }
+
+    /* Divider */
+    .form-divider {
+        height: 1px;
+        background: var(--gray-2);
+        margin: 1.35rem 0;
+    }
+
+    /* Submit button */
+    .btn-submit {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.8rem;
+        background: var(--pink);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        font-family: var(--sans);
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(200,24,74,0.28);
+        transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+        letter-spacing: 0.01em;
+        margin-top: 1.5rem;
+    }
+    .btn-submit:hover {
+        background: var(--pink-deep);
+        box-shadow: 0 6px 20px rgba(200,24,74,0.38);
+        transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ── SIDE INFO CARD ── */
+    .info-card {
+        background: var(--white);
+        border: 1px solid var(--gray-2);
+        border-radius: 16px;
+        overflow: hidden;
+        position: sticky;
+        top: calc(var(--navbar-h) + 1.5rem);
+    }
+    .info-card-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--gray-2);
+        background: var(--pink-lt);
+    }
+    .info-card-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--pink-deep);
+        letter-spacing: -0.01em;
+    }
+    .info-card-body { padding: 1.25rem; }
+
+    .info-step {
+        display: flex;
+        gap: 0.85rem;
+        margin-bottom: 1.1rem;
+    }
+    .info-step:last-child { margin-bottom: 0; }
+    .step-num {
+        width: 24px; height: 24px;
+        background: var(--pink-lt);
+        border: 1px solid var(--pink-soft);
+        border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--pink);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    .step-content h4 {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.2rem;
+    }
+    .step-content p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        line-height: 1.55;
+    }
+
+    .info-divider {
+        height: 1px;
+        background: var(--gray-2);
+        margin: 1.1rem 0;
+    }
+
+    .info-tip {
+        display: flex;
+        gap: 0.6rem;
+        background: var(--gray-1);
+        border: 1px solid var(--gray-2);
+        border-radius: 9px;
+        padding: 0.85rem 1rem;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        line-height: 1.55;
+    }
+    .info-tip i { color: var(--pink); margin-top: 1px; flex-shrink: 0; font-size: 0.8rem; }
+
+    @media (max-width: 860px) {
+        .create-layout { grid-template-columns: 1fr; }
+        .info-card { position: static; }
+    }
 </style>
 @endsection
 
 @section('content')
-    <a href="/test-sessions" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
 
-    <div class="form-container">
-        <div class="form-header">
-            <h2>Start New Test Session</h2>
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div>
+            <h1>New <em>Session</em></h1>
+            <p>Configure and start a new stress induction test session.</p>
+        </div>
+        <a href="/test-sessions" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Sessions</a>
+    </div>
+
+    <div class="create-layout">
+
+        <!-- FORM -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <div class="form-card-icon"><i class="fas fa-vial"></i></div>
+                <div>
+                    <div class="form-card-title">Session Configuration</div>
+                    <div class="form-card-subtitle">All fields are required to proceed</div>
+                </div>
+            </div>
+            <div class="form-body">
+                <form action="/test-sessions" method="POST">
+                    @csrf
+
+                    <div class="form-group">
+                        <label class="form-label" for="test_schedule_id">
+                            <i class="fas fa-calendar-alt"></i>
+                            Schedule Slot
+                            <span class="required-dot"></span>
+                        </label>
+                        <select name="test_schedule_id" id="test_schedule_id" class="form-select" required>
+                            <option value="" disabled selected>— Choose a date &amp; time slot —</option>
+                            @foreach($schedules as $schedule)
+                                <option value="{{ $schedule->id }}">
+                                    {{ \Carbon\Carbon::parse($schedule->date)->format('d M Y') }} at {{ \Carbon\Carbon::parse($schedule->time)->format('h:i A') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="field-hint"><i class="fas fa-circle-info"></i> Only available upcoming slots are shown.</div>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="participant_id">
+                            <i class="fas fa-user"></i>
+                            Participant
+                            <span class="required-dot"></span>
+                        </label>
+                        <select name="participant_id" id="participant_id" class="form-select" required>
+                            <option value="" disabled selected>— Choose a participant —</option>
+                            @foreach($participants as $participant)
+                                <option value="{{ $participant->id }}">
+                                    #P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }} &nbsp;·&nbsp; {{ $participant->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="field-hint"><i class="fas fa-circle-info"></i> Participants are linked to their enrolled profile.</div>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="test_id">
+                            <i class="fas fa-clipboard-list"></i>
+                            Test Protocol
+                            <span class="required-dot"></span>
+                        </label>
+                        <select name="test_id" id="test_id" class="form-select" required>
+                            <option value="" disabled selected>— Choose a test protocol —</option>
+                            @foreach($tests as $test)
+                                <option value="{{ $test->id }}">{{ $test->test_type }}</option>
+                            @endforeach
+                        </select>
+                        <div class="field-hint"><i class="fas fa-circle-info"></i> TSST, Cold Pressor, or Stroop Task.</div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-play"></i> Start Session
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <form action="/test-sessions" method="POST">
-            @csrf
-
-            <div class="form-group">
-                <label for="test_schedule_id">Select Schedule (Date & Time)</label>
-                <select name="test_schedule_id" id="test_schedule_id" required>
-                    <option value="" disabled selected>-- Choose a Schedule --</option>
-                    @foreach($schedules as $schedule)
-                        <option value="{{ $schedule->id }}">
-                            {{ \Carbon\Carbon::parse($schedule->date)->format('d/m/Y') }} at {{ \Carbon\Carbon::parse($schedule->time)->format('h:i A') }}
-                        </option>
-                    @endforeach
-                </select>
+        <!-- SIDE INFO -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-title"><i class="fas fa-circle-info" style="margin-right:0.4rem;"></i>Session Setup Guide</div>
             </div>
+            <div class="info-card-body">
+                <div class="info-step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Pick a Schedule Slot</h4>
+                        <p>Select a pre-created date and time for this session. Slots must be created in Schedules first.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Select the Participant</h4>
+                        <p>Choose from enrolled participants. Make sure their profile is complete before proceeding.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Choose the Test Protocol</h4>
+                        <p>Select the validated stress induction method suitable for this session's objectives.</p>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label for="participant_id">Select Participant</label>
-                <select name="participant_id" id="participant_id" required>
-                    <option value="" disabled selected>-- Choose a Participant --</option>
-                    @foreach($participants as $participant)
-                        <option value="{{ $participant->id }}">
-                            #P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }} - {{ $participant->name }}
-                        </option>
-                    @endforeach
-                </select>
+                <div class="info-divider"></div>
+
+                <div class="info-tip">
+                    <i class="fas fa-lightbulb"></i>
+                    After submission, the participant will be guided through the consent form before the test begins.
+                </div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="test_id">Select Test Protocol</label>
-                <select name="test_id" id="test_id" required>
-                    <option value="" disabled selected>-- Choose a Test --</option>
-                    @foreach($tests as $test)
-                        <option value="{{ $test->id }}">
-                            {{ $test->test_type }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <button type="submit" class="btn-submit">Start Session</button>
-        </form>
     </div>
+
 @endsection
