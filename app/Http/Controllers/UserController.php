@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\TestSession; // <-- ADD THIS IMPORT
+use App\Models\TestSession;
 use Illuminate\Support\Facades\Hash;
+use App\Models\AccessRequest;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResearcherAccessMail;
 
 class UserController extends Controller
 {
@@ -51,5 +55,35 @@ class UserController extends Controller
             ->get();
 
         return view('users.sessions', compact('staffMember', 'sessions'));
+    }
+
+    public function accessRequests(){
+        $requests = AccessRequest::where('status', 'pending')->latest()->get();
+        return view('admin.requests', compact('requests'));
+    }
+
+    public function approveRequest($id){
+        $request = AccessRequest::findOrFail($id);
+        $password = Str::random(12);
+
+        // Create user account
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($password),
+            'role' => 'researcher',
+        ]);
+
+        $request->update(['status' => 'approved']);
+
+        Mail::to($request->email)->send(new ResearcherAccessMail($request->email, $password));
+
+        return back()->with('success', 'Account created and login information emailed');
+    }
+
+    public function showRequest($id)
+    {
+        $accessRequest = AccessRequest::findOrFail($id);
+        return view('admin.show_request', compact('accessRequest'));
     }
 }

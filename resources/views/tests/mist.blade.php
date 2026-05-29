@@ -6,32 +6,33 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MIST Stress Task</title>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #222; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .test-container { background: #333; padding: 40px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); width: 100%; max-width: 700px; text-align: center; }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f4f7f6; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .test-container { background: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); width: 100%; max-width: 700px; text-align: center; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #555; padding-bottom: 15px;}
-        .title { font-size: 24px; font-weight: bold; color: #fff; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;}
+        .title { font-size: 24px; font-weight: bold; color: #111; }
         .timer { background-color: #dc3545; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 20px;}
 
         /* REACTION TIME PEER PRESSURE UI */
-        .performance-panel { background: #111; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #444;}
-        .bar-container { width: 100%; background-color: #333; border-radius: 4px; margin: 10px 0; height: 20px; position: relative; overflow: hidden;}
+        .performance-panel { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;}
+        .bar-container { width: 100%; background-color: #e2e8f0; border-radius: 4px; margin: 10px 0; height: 20px; position: relative; overflow: hidden;}
         .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease-in-out;}
         .peer-bar { background-color: #198754; width: 15%; } /* Green and short (fast time) */
         .user-bar { background-color: #dc3545; width: 0%; }   /* Red and long (slow time) */
-        .bar-label { font-size: 15px; font-weight: bold; text-align: left; display: flex; justify-content: space-between; margin-bottom: 5px;}
-        .warning-text { font-size: 13px; color: #ffc107; margin-top: 15px; font-style: italic; font-weight: bold; }
+        .bar-label { font-size: 15px; font-weight: bold; text-align: left; display: flex; justify-content: space-between; margin-bottom: 5px; color: #333;}
+        .warning-text { font-size: 13px; color: #b45309; margin-top: 15px; font-style: italic; font-weight: bold; }
 
         /* The Math */
-        #equation-display { font-size: 60px; font-weight: 900; margin: 30px 0; letter-spacing: 2px;}
-        .answer-input { font-size: 35px; padding: 15px; width: 200px; text-align: center; border: 3px solid #555; border-radius: 8px; font-weight: bold; background: #222; color: white; outline: none;}
-        .answer-input:focus { border-color: #0d6efd; }
+        #equation-display { font-size: 60px; font-weight: 900; margin: 30px 0; letter-spacing: 2px; color: #111;}
+        .answer-input { font-size: 35px; padding: 15px; width: 200px; text-align: center; border: 3px solid #ccc; border-radius: 8px; font-weight: bold; background: #fff; color: #111; outline: none; transition: border-color 0.2s, box-shadow 0.2s;}
+        .answer-input:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13,110,253,0.15);}
         
         .feedback { font-size: 24px; font-weight: bold; min-height: 35px; margin-bottom: 10px; color: #dc3545;}
         
-        #start-btn { padding: 15px 30px; background: #0d6efd; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold;}
+        #start-btn { padding: 15px 30px; background: #0d6efd; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; transition: transform 0.1s;}
+        #start-btn:active { transform: scale(0.98); }
         .hidden { display: none !important; }
-        #results-screen { display: none; padding: 40px; color: #fff; font-size: 22px; font-weight: bold; }
+        #results-screen { display: none; padding: 40px; color: #333; font-size: 22px; font-weight: bold; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         .blink-text { animation: blink 0.2s infinite; }
     </style>
@@ -45,7 +46,7 @@
         </div>
 
         <div id="start-screen">
-            <p style="font-size: 18px; color: #ccc; margin-bottom: 30px;">Solve the equations as quickly as possible. Your response time is being evaluated against the average speed of your peers.</p>
+            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Solve the equations as quickly as possible. Your response time is being evaluated against the average speed of your peers.</p>
             <button id="start-btn" onclick="startTest()">Start Evaluation</button>
         </div>
 
@@ -71,7 +72,7 @@
 
     <div class="test-container" id="results-screen">
         Finalizing Evaluation & Processing Video... <br>
-        <span style="font-size: 16px; color: #aaa; font-weight: normal; margin-top: 15px; display: block;">Please wait. You will be redirected automatically.</span>
+        <span style="font-size: 16px; color: #666; font-weight: normal; margin-top: 15px; display: block;">Please wait. You will be redirected automatically.</span>
     </div>
 
     <button id="mute-btn" onclick="toggleMute()" class="hidden" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">🔇 Mute Alarm</button>

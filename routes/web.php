@@ -8,10 +8,18 @@ use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StressTestController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\AccessRequestController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 use App\Models\Participant;
 use App\Models\TestSession;
+use App\Models\AccessRequest; // <-- Needed for the Dashboard
 
-// --- PUBLIC ROUTES ---
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return view('welcome'); // Landing page
 });
@@ -19,7 +27,15 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
-// --- SECURE RESEARCHER ROUTES (MUST BE LOGGED IN) ---
+// 1. FIXED: This is now public so researchers can submit the form!
+Route::post('/request-access', [AccessRequestController::class, 'store']);
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURE ROUTES (MUST BE LOGGED IN)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -28,7 +44,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $totalParticipants = Participant::count();
         $totalSessions = TestSession::count();
-        return view('dashboard', compact('totalParticipants', 'totalSessions'));
+        // 2. FIXED: Fetch pending requests so the dashboard widget works
+        $pendingRequests = AccessRequest::where('status', 'pending')->latest()->get(); 
+        
+        return view('dashboard', compact('totalParticipants', 'totalSessions', 'pendingRequests'));
     })->name('dashboard');
 
     // SCHEDULES
@@ -51,10 +70,16 @@ Route::middleware('auth')->group(function () {
 
     // ADMIN ONLY USER MANAGEMENT
     Route::middleware([\App\Http\Middleware\IsAdmin::class])->group(function () {
-        Route::get('/users', [\App\Http\Controllers\UserController::class, 'index']);
-        Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create']);
-        Route::post('/users', [\App\Http\Controllers\UserController::class, 'store']);
-        Route::get('/admin/staff/{id}/sessions', [\App\Http\Controllers\UserController::class, 'viewStaffSessions']);
+        Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/create', [UserController::class, 'create']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::get('/admin/staff/{id}/sessions', [UserController::class, 'viewStaffSessions']);
+        
+        // 3. FIXED: Moved Access Requests into the Admin group for security
+        Route::get('/admin/requests', [UserController::class, 'accessRequests']);
+        Route::post('/admin/requests/{id}/approve', [UserController::class, 'approveRequest']);
+
+        Route::get('/admin/requests/{id}', [\App\Http\Controllers\UserController::class, 'showRequest']);
     });
 
     // TEST SESSIONS & ASSIGNMENTS
@@ -71,7 +96,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/test-sessions/{id}/post-test', [AssessmentController::class, 'storePostTest']);
 
     // LAUNCH PAD SCREEN
-    Route::get('/test-sessions/{id}/launch', [App\Http\Controllers\AssessmentController::class, 'launchTest']);
+    Route::get('/test-sessions/{id}/launch', [AssessmentController::class, 'launchTest']);
 
     // INTERACTIVE TESTS
     Route::get('/test-sessions/{id}/stroop', [StressTestController::class, 'stroop']);
@@ -79,18 +104,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/test-sessions/{id}/tsst', [StressTestController::class, 'tsst']);
 
     // VIDEO RECORDING UPLOAD API (AUTO-SAVES RESULTS TOO)
-    Route::post('/test-sessions/{id}/recordings', [\App\Http\Controllers\TestSessionController::class, 'storeRecordings']);
+    Route::post('/test-sessions/{id}/recordings', [TestSessionController::class, 'storeRecordings']);
 
     // FINAL RESULT SCREEN
     Route::get('/test-sessions/{id}/result-summary', [AssessmentController::class, 'showResultSummary']);
 
     // PROFILE
-    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit']);
-    Route::post('/profile', [App\Http\Controllers\ProfileController::class, 'update']);
+    Route::get('/profile', [ProfileController::class, 'edit']);
+    Route::post('/profile', [ProfileController::class, 'update']);
 
     // PASSWORD
-    Route::get('/password/change', [App\Http\Controllers\ProfileController::class, 'changePassword']);
-    Route::post('/password/change', [App\Http\Controllers\ProfileController::class, 'updatePassword']);
+    Route::get('/password/change', [ProfileController::class, 'changePassword']);
+    Route::post('/password/change', [ProfileController::class, 'updatePassword']);
 
-    
 });

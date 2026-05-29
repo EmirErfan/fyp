@@ -697,10 +697,28 @@
             Public registration is closed for data security. Submit your institutional request and our team will respond within 48 hours.
         </p>
         <div class="contact-card reveal">
-            <form action="#" method="GET" onsubmit="handleSubmit(event)">
+            
+            <!-- SUCCESS NOTIFICATION -->
+            @if(session('success'))
+                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: left; font-weight: 500; font-size: 0.9rem;">
+                    ✓ {{ session('success') }}
+                </div>
+            @endif
+
+            <!-- ERROR NOTIFICATION -->
+            @if($errors->any())
+                <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: left; font-weight: 500; font-size: 0.9rem;">
+                    ⚠ {{ $errors->first() }}
+                </div>
+            @endif
+
+            <!-- THE FORM -->
+            <form action="/request-access" method="POST">
+                @csrf
                 <div class="form-group">
-                    <label for="full_name">Full Name</label>
-                    <input type="text" id="full_name" name="full_name" placeholder="Dr. Jane Doe" required>
+                    <label for="name">Full Name</label>
+                    <!-- Note the name attribute is "name", not "full_name" -->
+                    <input type="text" id="name" name="name" placeholder="Dr. Jane Doe" required>
                 </div>
                 <div class="form-group">
                     <label for="email">Institution / University Email</label>
@@ -712,6 +730,7 @@
                 </div>
                 <button type="submit" class="submit-btn">Submit Access Request</button>
             </form>
+            
             <p class="form-note">
                 <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 Your information is kept confidential and used only for access verification.
@@ -816,15 +835,6 @@ setInterval(() => {
     accEl.textContent   = accs[ti];
     remEl.textContent   = String(28 - ti * 4);
 }, 2600);
-
-/* ── FORM ── */
-function handleSubmit(e) {
-    e.preventDefault();
-    const btn = e.target.querySelector('.submit-btn');
-    btn.textContent = '✓ Request submitted!';
-    btn.style.background = '#16a34a';
-    btn.disabled = true;
-}
 </script>
 
 </body>

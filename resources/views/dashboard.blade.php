@@ -359,4 +359,44 @@
 
     </div>
 
+    @if(isset($pendingRequests) && $pendingRequests->count() > 0)
+        <div class="section-head" style="margin-top: 1.5rem;">
+            <span class="section-head-title">Pending Access Requests</span>
+            <div class="section-head-line"></div>
+        </div>
+
+        <div class="panel-card card">
+            <div class="panel-card-title">Awaiting Approval ({{ $pendingRequests->count() }})</div>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--gray-2);">
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Name</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Email</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pendingRequests->take(5) as $request) <tr style="border-bottom: 1px solid var(--gray-1);">
+                                <td style="padding: 0.75rem 1rem; font-weight: 600; color: var(--text-primary);">{{ $request->name }}</td>
+                                <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">{{ $request->email }}</td>
+                                <td style="padding: 0.75rem 1rem; text-align: right;">
+                                    <a href="{{ url('/admin/requests/' . $request->id) }}" class="qa-btn" style="display: inline-flex; padding: 0.4rem 0.75rem; background: var(--pink-lt); color: var(--pink); border-color: var(--pink-soft); text-decoration: none; justify-content: center;">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            @if($pendingRequests->count() > 5)
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="/admin/requests" style="font-size: 0.8rem; color: var(--pink); text-decoration: none; font-weight: 600;">View All {{ $pendingRequests->count() }} Requests &rarr;</a>
+                </div>
+            @endif
+        </div>
+    @endif
 @endsection

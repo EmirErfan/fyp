@@ -240,6 +240,50 @@
         .mobile-drawer .nav-link { padding: 0.65rem 1rem; font-size: 0.88rem; }
         .mobile-sep { height: 1px; background: var(--gray-2); margin: 0.4rem 0; }
 
+        /* ── TOAST NOTIFICATIONS ── */
+        .toast-container {
+            position: fixed;
+            top: calc(var(--navbar-h) + 1.5rem);
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none; /* Lets clicks pass through the container */
+        }
+        .toast {
+            min-width: 300px;
+            background: var(--white);
+            border-left: 4px solid var(--pink);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            pointer-events: auto; /* Re-enables clicks on the toast itself */
+        }
+        .toast.success { border-left-color: #10b981; }
+        .toast.success .toast-icon { color: #10b981; font-size: 1.1rem; }
+        
+        .toast.error { border-left-color: #ef4444; }
+        .toast.error .toast-icon { color: #ef4444; font-size: 1.1rem; }
+        
+        .toast.hiding { animation: fadeOutRight 0.3s ease forwards; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+
         /* ── MAIN ── */
         .main-content {
             margin-top: var(--navbar-h);
@@ -341,6 +385,22 @@
         </form>
     </div>
 
+    <div class="toast-container" id="global-toasts">
+        @if(session('success'))
+            <div class="toast success">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+        
+        @if(session('error') || $errors->any())
+            <div class="toast error">
+                <i class="fas fa-exclamation-circle toast-icon"></i>
+                <span>{{ session('error') ?? $errors->first() }}</span>
+            </div>
+        @endif
+    </div>
+
     <main class="main-content">
         @yield('content')
     </main>
@@ -359,6 +419,18 @@
             if (dropdown && dropdown.classList.contains('show')) {
                 dropdown.classList.remove('show');
             }
+        });
+
+        // Auto-dismiss Toasts after 4 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    // Remove from DOM entirely after the exit animation finishes
+                    setTimeout(() => toast.remove(), 300); 
+                }, 4000);
+            });
         });
     </script>
 </body>
