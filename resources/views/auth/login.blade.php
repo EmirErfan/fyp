@@ -312,7 +312,7 @@
                     </button>
                 </div>
 
-                <a href="#" class="recovery-link">Recovery Password</a>
+                <a href="/forgot-password" class="recovery-link">Recovery Password</a>
 
                 <button type="submit" class="submit-btn">Sign In</button>
             </form>
