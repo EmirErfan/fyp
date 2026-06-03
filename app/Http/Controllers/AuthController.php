@@ -27,7 +27,6 @@ class AuthController extends Controller
             // Security feature: resets the session to prevent hacking
             $request->session()->regenerate(); 
             
-            // THE FIX: Send them to the main system dashboard!
             return redirect('/dashboard'); 
         }
 

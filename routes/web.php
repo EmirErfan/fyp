@@ -13,7 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Participant;
 use App\Models\TestSession;
-use App\Models\AccessRequest; // <-- Needed for the Dashboard
+use App\Models\AccessRequest;
 
 /*
 |--------------------------------------------------------------------------
