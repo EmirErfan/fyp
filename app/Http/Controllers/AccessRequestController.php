@@ -11,12 +11,14 @@ class AccessRequestController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
+            'institution' => 'required|string|max:255',
             'purpose' => 'required|string',
         ]);
 
         AccessRequest::create([
             'name' => $request->name,
             'email' => $request->email,
+            'institution' => $request->institution,
             'purpose' => $request->purpose,
         ]);
 

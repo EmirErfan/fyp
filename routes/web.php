@@ -21,7 +21,7 @@ use App\Models\AccessRequest;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return view('welcome'); // Landing page
+    return view('welcome');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -33,9 +33,7 @@ Route::post('/forgot-password', [\App\Http\Controllers\PasswordResetController::
 Route::get('/reset-password/{token}', [\App\Http\Controllers\PasswordResetController::class, 'reset'])->middleware('guest')->name('password.reset');
 Route::post('/reset-password', [\App\Http\Controllers\PasswordResetController::class, 'update'])->middleware('guest')->name('password.update');
 
-// 1. FIXED: This is now public so researchers can submit the form!
 Route::post('/request-access', [AccessRequestController::class, 'store']);
-
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +48,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $totalParticipants = Participant::count();
         $totalSessions = TestSession::count();
-        // 2. FIXED: Fetch pending requests so the dashboard widget works
         $pendingRequests = AccessRequest::where('status', 'pending')->latest()->get(); 
         
         return view('dashboard', compact('totalParticipants', 'totalSessions', 'pendingRequests'));
@@ -66,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/participants', [ParticipantController::class, 'index']);
     Route::get('/participants/create', [ParticipantController::class, 'create']);
     Route::post('/participants', [ParticipantController::class, 'store']);
+    Route::get('/participants/{id}', [ParticipantController::class, 'show'])->name('participants.show');
     Route::get('/participants/{id}/edit', [ParticipantController::class, 'edit']);
     Route::put('/participants/{id}', [ParticipantController::class, 'update']);
     Route::delete('/participants/{id}', [ParticipantController::class, 'destroy']);
@@ -79,12 +77,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/create', [UserController::class, 'create']);
         Route::post('/users', [UserController::class, 'store']);
-        Route::get('/admin/staff/{id}/sessions', [UserController::class, 'viewStaffSessions']);
         
-        // 3. FIXED: Moved Access Requests into the Admin group for security
+        // FIXED ROUTE NAME HERE
+        Route::get('/admin/staff/{id}/sessions', [UserController::class, 'viewStaffSessions'])->name('users.sessions');
+        
+        Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/admin/users/{id}', [UserController::class, 'update']);
+        
         Route::get('/admin/requests', [UserController::class, 'accessRequests']);
         Route::post('/admin/requests/{id}/approve', [UserController::class, 'approveRequest']);
-
         Route::get('/admin/requests/{id}', [\App\Http\Controllers\UserController::class, 'showRequest']);
     });
 

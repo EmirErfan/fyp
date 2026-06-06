@@ -7,7 +7,6 @@ use App\Models\Participant;
 
 class ParticipantController extends Controller
 {
-    // 1. THE UPGRADED DASHBOARD (With Smart Search)
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -47,19 +46,32 @@ class ParticipantController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
-            'dob' => 'required|date', 
-            'gender' => 'required|string',
-            'date_joined' => 'required|date',
-            'user_id' => 'nullable|exists:users,id'
+            'name' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'gender' => 'required|in:Male,Female',
+            'email' => 'nullable|email|max:255', 
+            'phone' => ['nullable', 'regex:/^0[0-9]{9,10}$/'],
+            'occupation' => 'nullable|string|max:255',
+            'education_level' => 'nullable|string|max:255',
+            'color_blindness' => 'required|string',
+            'existing_condition' => 'nullable|string',
+        ], [
+            'phone.regex' => 'The phone number must start with 0 and contain exactly 10 or 11 digits (e.g., 0123456789). No dashes or spaces allowed.',
+            'email.email' => 'Please enter a valid email address.',
         ]);
 
         Participant::create([
             'name' => $request->name,
             'dob' => $request->dob, 
             'gender' => $request->gender,
-            'date_joined' => $request->date_joined,
-            'user_id' => auth()->user()->role === 'admin' ? $request->user_id : auth()->id(),
+            'date_joined' => now()->toDateString(),
+            'user_id' => auth()->user()->role === 'admin' ? ($request->user_id ?? $request->researcher_id) : auth()->id(),
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'occupation' => $request->occupation,
+            'education_level' => $request->education_level,
+            'color_blindness' => $request->color_blindness,
+            'existing_condition' => $request->existing_condition,
         ]);
 
         return redirect('/participants')->with('success', 'Participant added successfully!');
@@ -80,11 +92,18 @@ class ParticipantController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|string',
-            'dob' => 'required|date', 
-            'gender' => 'required|string',
-            'date_joined' => 'required|date',
-            'user_id' => 'nullable|exists:users,id'
+            'name' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'gender' => 'required|in:Male,Female',
+            'email' => 'nullable|email|max:255', 
+            'phone' => ['nullable', 'regex:/^0[0-9]{9,10}$/'],
+            'occupation' => 'nullable|string|max:255',
+            'education_level' => 'nullable|string|max:255',
+            'color_blindness' => 'required|string',
+            'existing_condition' => 'nullable|string',
+        ], [
+            'phone.regex' => 'The phone number must start with 0 and contain exactly 10 or 11 digits (e.g., 0123456789). No dashes or spaces allowed.',
+            'email.email' => 'Please enter a valid email address.',
         ]);
 
         $participant = Participant::findOrFail($id);
@@ -97,8 +116,13 @@ class ParticipantController extends Controller
             'name' => $request->name,
             'dob' => $request->dob, 
             'gender' => $request->gender,
-            'date_joined' => $request->date_joined,
-            'user_id' => auth()->user()->role === 'admin' ? $request->user_id : $participant->user_id,
+            'user_id' => auth()->user()->role === 'admin' ? ($request->user_id ?? $request->researcher_id ?? $participant->user_id) : $participant->user_id,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'occupation' => $request->occupation,
+            'education_level' => $request->education_level,
+            'color_blindness' => $request->color_blindness,
+            'existing_condition' => $request->existing_condition,
         ]);
 
         return redirect('/participants')->with('success', 'Participant updated successfully!');
@@ -114,5 +138,16 @@ class ParticipantController extends Controller
 
         $participant->delete();
         return redirect('/participants')->with('success', 'Participant deleted successfully!');
+    }
+
+    public function show($id)
+    {
+        $participant = \App\Models\Participant::findOrFail($id);
+        
+        $allTests = \App\Models\TestSession::where('participant_id', $id)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+
+        return view('participants.show', compact('participant', 'allTests'));
     }
 }

@@ -338,8 +338,12 @@
 
         <div class="nav-right">
             <div class="profile-menu" onclick="toggleProfileMenu(event)">
-                <div class="user-avatar">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                <div class="profile-avatar" style="overflow: hidden;">
+                    @if(auth()->check() && auth()->user()->profile_picture)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                    @endif
                 </div>
                 
                 <div class="profile-name">

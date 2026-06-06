@@ -255,6 +255,36 @@
         .footer-links a { font-size: 0.8rem; color: var(--ink-4); text-decoration: none; transition: color 0.2s; }
         .footer-links a:hover { color: var(--pink-dark); }
 
+        /* ── TOAST NOTIFICATION ── */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #ffffff;
+            border-left: 5px solid #10b981; /* Emerald green */
+            color: var(--ink);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: var(--sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 9999;
+            transform: translateX(150%); /* Hidden off-screen by default */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .toast-notification.show {
+            transform: translateX(0); /* Slides in */
+        }
+        .toast-icon {
+            color: #10b981;
+            font-size: 1.25rem;
+        }
+
+        /* ── RESPONSIVE ── */
         @media(max-width:960px) {
             .hero { grid-template-columns: 1fr; height: auto; min-height: auto; padding: 7rem 2rem 4rem; }
             .hero-right { height: 340px; margin-top: 2rem; }
@@ -375,15 +405,22 @@
                 @csrf
                 <div class="form-group">
                     <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" placeholder="Dr. Jane Doe" required>
+                    <input type="text" id="name" name="name" placeholder="Dr. Ali" required>
                 </div>
+                
                 <div class="form-group">
                     <label for="email">Institution / University Email</label>
-                    <input type="email" id="email" name="email" placeholder="jane@university.edu" required>
+                    <input type="email" id="email" name="email" placeholder="ali@uitm.edu.my" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="institution">Institution Name</label>
+                    <input type="text" id="institution" name="institution" placeholder="Universiti Teknologi MARA" required>
+                </div>
+
                 <div class="form-group">
                     <label for="purpose">Research Purpose</label>
-                    <textarea id="purpose" name="purpose" placeholder="Briefly describe your research study, institution, and intended use of the platform..." required></textarea>
+                    <textarea id="purpose" name="purpose" placeholder="Briefly describe your research study, intended sample size, and how you plan to use the stress induction protocols..." required></textarea>
                 </div>
                 <button type="submit" class="submit-btn">Submit Access Request</button>
             </form>
@@ -396,6 +433,7 @@
     </div>
 </section>
 
+
 <footer>
     <div class="footer-inner">
         <span class="footer-logo"><i class="fas fa-brain" style="color: var(--pink-dark);"></i> StressLab</span>
@@ -407,6 +445,28 @@
         </ul>
     </div>
 </footer>
+@if(session('success'))
+    <div id="successToast" class="toast-notification">
+        <i class="fas fa-check-circle toast-icon"></i>
+        <span>{{ session('success') }}</span>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.getElementById('successToast');
+            if (toast) {
+                // Slide in slightly after page loads for a smooth effect
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 100);
+
+                // Slide out after 4.5 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4500);
+            }
+        });
+    </script>
+@endif
 </body>
 </html>

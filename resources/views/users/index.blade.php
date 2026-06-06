@@ -27,6 +27,7 @@
                 <tr style="border-bottom: 2px solid #f1f5f9;">
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Name</th>
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Email</th>
+                    <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Role</th>
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Joined</th>
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Actions</th>
                 </tr>
@@ -36,8 +37,12 @@
                     <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                         <td style="padding: 1rem; font-weight: 500; color: #1e293b;">
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #475569;">
-                                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                                <div style="width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #475569; flex-shrink: 0;">
+                                    @if($user->profile_picture)
+                                        <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                    @else
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    @endif
                                 </div>
                                 {{ $user->name }}
                             </div>
@@ -52,11 +57,20 @@
                         </td>
                         <td style="padding: 1rem; color: #64748b; font-size: 0.95rem;">{{ $user->created_at->format('M d, Y') }}</td>
                         <td style="padding: 1rem;">
-                            @if($user->role === 'researcher')
-                            <a href="{{ url('/admin/staff/' . $user->id . '/sessions') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #f8f9fa; border: 1px solid #ddd; color: #555; padding: 0.4rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: 0.2s;">
-                                View Sessions
-                            </a>
-                            @endif
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                
+                                <a href="{{ route('users.sessions', $user->id) }}" style="display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; font-size: 0.85rem; font-weight: 500; background: white; transition: 0.2s;" onmouseover="this.style.borderColor='#d1d5db'; this.style.backgroundColor='#f9fafb';" onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';">
+                                    View Sessions
+                                </a>
+
+                                <a href="{{ route('users.edit', $user->id) }}" title="Edit User" style="display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.6rem; border: 1px solid #e5e7eb; border-radius: 6px; color: #6b7280; text-decoration: none; background: white; transition: 0.2s;" onmouseover="this.style.borderColor='#d1d5db'; this.style.color='#374151';" onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#6b7280';">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                                    </svg>
+                                </a>
+
+                            </div>
                         </td>
                     </tr>
                 @endforeach

@@ -28,52 +28,121 @@
 @section('content')
     <a href="/participants" class="back-link"><i class="fas fa-arrow-left"></i> Back to Participants</a>
 
-    <div class="form-container">
-        <div class="form-header">
-            <h2>Edit Participant #P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }}</h2>
-        </div>
+    <div style="max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #f3f4f6;">
+            Edit Participant #P-{{ str_pad($participant->id, 3, '0', STR_PAD_LEFT) }}
+        </h2>
 
         <form action="/participants/{{ $participant->id }}" method="POST">
             @csrf
             @method('PUT')
 
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" value="{{ $participant->name }}" required>
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Full Name</label>
+                <input type="text" name="name" value="{{ old('name', $participant->name) }}" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
             </div>
 
-            <div class="form-group row">
-                <div class="col">
-                    <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" name="dob" value="{{ \Carbon\Carbon::parse($participant->dob)->format('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Date of Birth</label>
+                    <input type="date" name="dob" value="{{ old('dob', \Carbon\Carbon::parse($participant->dob)->format('Y-m-d')) }}" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
                 </div>
-                <div class="col">
-                    <label for="gender">Gender</label>
-                    <select id="gender" name="gender" required>
-                        <option value="Male" {{ $participant->gender == 'Male' ? 'selected' : '' }}>Male</option>
-                        <option value="Female" {{ $participant->gender == 'Female' ? 'selected' : '' }}>Female</option>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Gender</label>
+                    <select name="gender" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: white;">
+                        <option value="Male" {{ old('gender', $participant->gender) == 'Male' ? 'selected' : '' }}>Male</option>
+                        <option value="Female" {{ old('gender', $participant->gender) == 'Female' ? 'selected' : '' }}>Female</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="date_joined">Date Joined</label>
-                <input type="date" id="date_joined" name="date_joined" value="{{ \Carbon\Carbon::parse($participant->date_joined)->format('Y-m-d') }}" required>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Email Address</label>
+                    <input type="email" name="email" value="{{ old('email', $participant->email) }}" placeholder="e.g. ahmad@email.com" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Phone Number</label>
+                    <input type="text" name="phone" value="{{ old('phone', $participant->phone) }}" placeholder="e.g. 012-3456789" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                </div>
             </div>
 
-            @if(auth()->user()->role === 'admin')
-            <div class="form-group">
-                <label for="user_id">Assign to Researcher</label>
-                <select id="user_id" name="user_id">
-                    <option value="">-- No Assignment (Admin Only) --</option>
-                    @foreach($researchers as $researcher)
-                        <option value="{{ $researcher->id }}" {{ $participant->user_id == $researcher->id ? 'selected' : '' }}>{{ $researcher->name }} ({{ ucfirst($researcher->role) }})</option>
-                    @endforeach
-                </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Occupation</label>
+                    <input type="text" name="occupation" value="{{ old('occupation', $participant->occupation) }}" placeholder="e.g. Student, Engineer" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Education Level</label>
+                    <select name="education_level" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: white;">
+                        <option value="">Select Level</option>
+                        <option value="High School / SPM" {{ old('education_level', $participant->education_level) == 'High School / SPM' ? 'selected' : '' }}>High School / SPM</option>
+                        <option value="Diploma" {{ old('education_level', $participant->education_level) == 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                        <option value="Bachelor's Degree" {{ old('education_level', $participant->education_level) == "Bachelor's Degree" ? 'selected' : '' }}>Bachelor's Degree</option>
+                        <option value="Master's / PhD" {{ old('education_level', $participant->education_level) == "Master's / PhD" ? 'selected' : '' }}>Master's / PhD</option>
+                    </select>
+                </div>
             </div>
-            @endif
 
-            <button type="submit" class="btn-submit">Update Participant</button>
+            <div style="margin-top: 1.5rem; margin-bottom: 1.5rem; border-top: 1px dashed #e5e7eb; padding-top: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <i class="fas fa-notes-medical" style="color: #f59e0b; font-size: 0.9rem;"></i>
+                    <h3 style="font-size: 0.85rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">
+                        Medical & Baseline Details
+                    </h3>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Color Blindness Status</label>
+                        <select name="color_blindness" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: white;">
+                            <option value="None" {{ old('color_blindness', $participant->color_blindness) == 'None' ? 'selected' : '' }}>Normal Vision (None)</option>
+                            <option value="Red-Green" {{ old('color_blindness', $participant->color_blindness) == 'Red-Green' ? 'selected' : '' }}>Red-Green Color Blindness</option>
+                            <option value="Blue-Yellow" {{ old('color_blindness', $participant->color_blindness) == 'Blue-Yellow' ? 'selected' : '' }}>Blue-Yellow Color Blindness</option>
+                            <option value="Total" {{ old('color_blindness', $participant->color_blindness) == 'Total' ? 'selected' : '' }}>Total Color Blindness</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Existing Conditions</label>
+                        <select name="existing_condition" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: white;">
+                            <option value="Normal" {{ old('existing_condition', $participant->existing_condition) == 'Normal' ? 'selected' : '' }}>None (Normal Baseline)</option>
+                            <option value="ADHD" {{ old('existing_condition', $participant->existing_condition) == 'ADHD' ? 'selected' : '' }}>ADHD</option>
+                            <option value="Anxiety" {{ old('existing_condition', $participant->existing_condition) == 'Anxiety' ? 'selected' : '' }}>Anxiety Disorder</option>
+                            <option value="Cardiovascular" {{ old('existing_condition', $participant->existing_condition) == 'Cardiovascular' ? 'selected' : '' }}>Cardiovascular Issue</option>
+                            <option value="Other" {{ old('existing_condition', $participant->existing_condition) == 'Other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; border-top: 1px dashed #e5e7eb; padding-top: 1.5rem; margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Date Joined</label>
+                        <input type="date" name="date_joined" value="{{ old('date_joined', \Carbon\Carbon::parse($participant->date_joined)->format('Y-m-d')) }}" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem;">Assign to Researcher</label>
+                        <select name="researcher_id" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: white;">
+                            <option value="">Select Researcher</option>
+                            @if(isset($researchers))
+                                @foreach($researchers as $researcher)
+                                    <option value="{{ $researcher->id }}" {{ old('researcher_id', $participant->researcher_id ?? '') == $researcher->id ? 'selected' : '' }}>
+                                        {{ $researcher->name }} ({{ ucfirst($researcher->role) }})
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="{{ $participant->researcher_id ?? '' }}" selected>Maintain Current Assignment</option>
+                            @endif
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" style="width: 100%; background: #4f46e5; color: white; padding: 0.85rem; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                Update Participant
+            </button>
         </form>
     </div>
 @endsection

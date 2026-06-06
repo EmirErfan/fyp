@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon; // Make sure this is here!
+use Carbon\Carbon;
 
 class Participant extends Model
 {
-    // 1. Update fillable to use dob instead of age, and include user_id
-    protected $fillable = ['name', 'dob', 'gender', 'date_joined', 'user_id'];
+    // FIXED: Changed 'researcher_id' to 'user_id' so it matches the database
+    protected $fillable = [
+        'name', 'dob', 'gender', 'email', 'phone', 
+        'date_joined', 'occupation', 'education_level', 
+        'color_blindness', 'existing_condition', 'user_id'
+    ];
 
     // Define relationship to the Researcher (User)
     public function researcher()
@@ -16,7 +20,7 @@ class Participant extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // 2. Add this "Accessor" to magically calculate the age for your table!
+    // Accessor to magically calculate the age
     public function getAgeAttribute()
     {
         return Carbon::parse($this->attributes['dob'])->age;

@@ -25,7 +25,8 @@ class TestSession extends Model
 
     public function test()
     {
-        return $this->belongsTo(Test::class); // The specific test (Stroop, MIST, etc.)
+        // This assumes your Test model is located at App\Models\Test
+        return $this->belongsTo(Test::class, 'test_id');
     }
 
     public function testSchedule()

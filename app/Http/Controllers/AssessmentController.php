@@ -97,7 +97,7 @@ class AssessmentController extends Controller
             'eustress_item_04' => $request->eustress_item_04,
         ]);
 
-        // 3. Mark the session as Completed!
+        // 3. Mark the session as Completed
         $session = TestSession::findOrFail($id);
         $session->update(['status' => 'Completed']);
 

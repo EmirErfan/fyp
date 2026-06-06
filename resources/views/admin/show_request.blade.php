@@ -40,6 +40,15 @@
                 </div>
             </div>
 
+            <div style="margin-bottom: 1.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">
+                    Institution Name
+                </span>
+                <div style="font-size: 1.1rem; font-weight: 600; color: #1a0a10;">
+                    {{ $accessRequest->institution }}
+                </div>
+            </div>
+
             <div style="background: var(--off-white); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--gray-2); margin-top: 0.5rem;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Research Purpose & Institutional Context</label>
                 <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary); white-space: pre-wrap;">{{ $accessRequest->purpose }}</div>

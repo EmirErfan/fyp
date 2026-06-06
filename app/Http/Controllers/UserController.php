@@ -86,4 +86,55 @@ class UserController extends Controller
         $accessRequest = AccessRequest::findOrFail($id);
         return view('admin.show_request', compact('accessRequest'));
     }
+
+    public function edit($id)
+    {
+        // Find the user or throw a 404 if they don't exist
+        $editUser = User::findOrFail($id); 
+
+        // Send the user data to a new view we are about to create
+        return view('users.edit', compact('editUser'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // 1. Find the specific user being edited
+        $editUser = User::findOrFail($id);
+
+        // 2. Validate all the fields (including the Admin-only 'role' field)
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $editUser->id,
+            'role' => 'required|in:admin,researcher',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'university' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
+        ]);
+
+        // 3. Handle the Image Upload
+        if ($request->hasFile('profile_picture')) {
+            // Delete old picture if it exists
+            if ($editUser->profile_picture) {
+                Storage::disk('public')->delete($editUser->profile_picture);
+            }
+            
+            // Save new picture
+            $imagePath = $request->file('profile_picture')->store('profile_pictures', 'public');
+            $editUser->profile_picture = $imagePath;
+        }
+
+        // 4. Save the rest of the text data
+        $editUser->name = $request->name;
+        $editUser->email = $request->email;
+        $editUser->role = $request->role; // Admin can change roles
+        $editUser->university = $request->university;
+        $editUser->department = $request->department;
+        $editUser->bio = $request->bio;
+        
+        $editUser->save();
+
+        // 5. Send them back to the user list with a success message
+        return redirect('/users')->with('success', 'User account updated successfully.');
+    }
 }
