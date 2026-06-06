@@ -47,7 +47,16 @@
 
         <div id="start-screen">
             <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Solve the equations as quickly as possible. Your response time is being evaluated against the average speed of your peers.</p>
-            <button id="start-btn" onclick="startTest()">Start Evaluation</button>
+            <button id="start-btn" onclick="initRecordingAndRest()">Start Evaluation</button>
+        </div>
+
+        <div id="rest-screen" class="hidden" style="text-align: center; padding: 2rem;">
+            <h2 style="color: #059669; font-size: 2rem;">Baseline Rest Period</h2>
+            <p style="font-size: 1.1rem; color: #4b5563;">Please sit quietly, breathe normally, and look at the screen.</p>
+            <div style="font-size: 3rem; font-weight: bold; margin-top: 2rem; color: #111;">
+                00:<span id="rest-timer">30</span>
+            </div>
+            <p style="font-size: 0.9rem; color: #9ca3af; margin-top: 20px;">The evaluation will begin automatically.</p>
         </div>
 
         <div id="test-area" class="hidden">
@@ -75,7 +84,7 @@
         <span style="font-size: 16px; color: #666; font-weight: normal; margin-top: 15px; display: block;">Please wait. You will be redirected automatically.</span>
     </div>
 
-    <button id="mute-btn" onclick="toggleMute()" class="hidden" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">🔇 Mute Alarm</button>
+    <button id="mute-btn" onclick="toggleMute()" class="hidden" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">這 Mute Alarm</button>
 
     <script>
         let globalTimeRemaining = 180; // 3 Minutes
@@ -87,7 +96,7 @@
         function toggleMute() {
             isMuted = !isMuted;
             const btn = document.getElementById('mute-btn');
-            btn.innerText = isMuted ? "🔊 Unmute Alarm" : "🔇 Mute Alarm";
+            btn.innerText = isMuted ? "矧 Unmute Alarm" : "這 Mute Alarm";
             btn.style.backgroundColor = isMuted ? "#6c757d" : "#dc3545";
         }
         let questionStartTime = 0;
@@ -98,6 +107,10 @@
         let reactionTimes = [];
         let consecutiveCorrect = 0;
         let consecutiveErrors = 0;
+
+        // --- REST PHASE VARIABLES ---
+        let restTimeLeft = 30;
+        let restInterval;
 
         // --- DUAL-RECORDING ENGINE VARIABLES ---
         let combinedRecorder;
@@ -194,8 +207,10 @@
         document.body.appendChild(canvas);
         const ctx = canvas.getContext('2d');
 
-        async function startTest() {
+        // --- NEW INITIALIZATION FUNCTION ---
+        async function initRecordingAndRest() {
             try {
+                // Request permissions immediately so recording captures the baseline!
                 faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "window" }, audio: false });
 
@@ -205,7 +220,7 @@
                 await faceVid.play().catch(e => console.log(e));
                 await screenVid.play().catch(e => console.log(e));
 
-                // Wait half a second for streams to stabilize
+                // Start the recording processes
                 setTimeout(() => {
                     drawDualFrame();
                     
@@ -226,11 +241,34 @@
                 }, 500);
 
             } catch (err) {
-                alert("Camera/Screen Error. Permissions required."); return;
+                alert("Camera/Screen Error. Permissions required to proceed."); return;
             }
 
+            // Hide start screen, show rest screen
             document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('rest-screen').classList.remove('hidden');
+
+            // Begin the 30-second countdown
+            restInterval = setInterval(() => {
+                restTimeLeft--;
+                
+                // Format nicely with a leading zero
+                let displayTime = restTimeLeft < 10 ? "0" + restTimeLeft : restTimeLeft;
+                document.getElementById('rest-timer').innerText = displayTime;
+
+                if (restTimeLeft <= 0) {
+                    clearInterval(restInterval);
+                    startMathTest();
+                }
+            }, 1000);
+        }
+
+        // --- PREVIOUSLY startTest() ---
+        function startMathTest() {
+            // Swap out the UI screens
+            document.getElementById('rest-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');
+            
             isPlaying = true;
             answerInput.focus();
             generateEquation();
@@ -265,8 +303,7 @@
 
         // --- STITCHING LOGIC ---
         function drawDualFrame() {
-            if (!isPlaying) return;
-
+            // Keep drawing even if not "playing" math yet, so the rest phase is recorded!
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
