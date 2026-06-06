@@ -1,48 +1,107 @@
-# Laravel Project Name
+# Centralized Web-Based System for Stress Induction Methods (StressLab)
 
-<p align="center">
-  <img src="https://picperf.io/https://laravelnews.s3.amazonaws.com/images/laravel-featured.png" width="200" alt="Laravel Logo">
-</p>
+A rigorous, validated suite of cognitive stress protocols designed for psychological research. This platform digitizes established stress induction tasks, providing real-time analytics, automated scoring, and secure institutional access management.
 
-## 📌 Project Overview
-Provide a brief description of what this application does. Mention the core features and the primary goal of the project.
+Developed as a Final Year Project at **UiTM Kampus Jasin**.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Features
 
-Follow these steps to get your development environment synchronized and running.
+### Validated Stress Protocols
 
-### 1. Prerequisites
-Ensure you have the following installed:
-*   **PHP** (>= 8.2 recommended)
-*   **Composer**
-*   **Node.js & NPM**
-*   **MySQL**
+- **Stroop Color and Word Test:** Measures cognitive interference and selective attention with automated reaction time tracking.
+- **Montreal Imaging Stress Task (MIST):** Induces stress through time-pressured arithmetic tasks with dynamic difficulty adjustment.
+- **Trier Social Stress Test (TSST):** Standardized serial subtraction tasks under evaluative observation conditions.
 
-### 2. Installation
+### Additional Features
+
+- **Researcher Access Control:** Secure, role-based institutional access requiring admin approval and automated credential provisioning.
+- **Analytics Dashboard:** Real-time monitoring of participant response metrics, reaction times, and accuracy scores.
+- **Secure Data Handling:** Complete confidentiality for participant data, compliant with standard academic ethics requirements.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Laravel (PHP) |
+| Database | MariaDB / MySQL |
+| Frontend | Blade Templating, HTML5, CSS3, JavaScript |
+| Environment | Docker (via Laravel Sail) |
+
+---
+
+## 💻 Installation & Setup
+
+This project uses Laravel Sail for a seamless Docker development environment. Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running before proceeding.
+
+**1. Clone the repository**
+
 ```bash
-# Clone the repository
-git clone https://github.com/EmirErfan/fyp.git
+git clone https://github.com/EmirErfan/stress-system.git
+cd stress-system
+```
 
-# Navigate to the directory
-cd fyp
+**2. Install Composer dependencies**
 
-# Install PHP dependencies
-composer install
+```bash
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php82-composer:latest \
+    composer install --ignore-platform-reqs
+```
 
-# Install and build frontend assets
-npm install && npm run build
+**3. Environment Setup**
 
-# Copy the example environment file
+Copy the `.env` example file and configure your local database and mail settings.
+
+```bash
 cp .env.example .env
+```
 
-# Generate application key
-php artisan key:generate
+> **Note:** Ensure your `.env` contains valid SMTP credentials (e.g., Gmail App Password) for the researcher access approval email flow to function.
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=create_any_database_name_you_want
-DB_USERNAME=root
-DB_PASSWORD=
+**4. Start Laravel Sail**
+
+```bash
+./vendor/bin/sail up -d
+```
+
+**5. Generate Application Key**
+
+```bash
+./vendor/bin/sail artisan key:generate
+```
+
+**6. Run Migrations & Seeders**
+
+```bash
+./vendor/bin/sail artisan migrate --seed
+```
+
+**7. Clear Configuration Cache**
+
+If you modify your `.env` file (especially mail settings), always clear the cache:
+
+```bash
+./vendor/bin/sail artisan config:clear
+```
+
+The application will now be accessible at `http://localhost`.
+
+---
+
+## 👨‍💻 Author
+
+**Ahmad Emir Erfan**
+- GitHub: [@EmirErfan](https://github.com/EmirErfan)
+
+---
+
+## 📄 License
+
+This project is proprietary and developed for academic and institutional research purposes. All rights reserved.
