@@ -7,7 +7,7 @@
 <div style="max-width: 700px; margin: 0 auto; background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
     
     <div style="margin-bottom: 2rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 1rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; color: #111;">Edit Staff Account</h2>
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #111;">Edit User Account</h2>
         <p style="color: #6b7280; font-size: 0.95rem;">Manage details and system permissions for {{ $editUser->name }}.</p>
     </div>
 
@@ -76,5 +76,14 @@
             </a>
         </div>
     </form>
+
+    <form action="/admin/users/{{ $editUser->id }}" method="POST" onsubmit="return confirm('Are you absolutely sure you want to delete this user account? This action cannot be undone.');" style="margin-top: 1rem; text-align: center;">
+        @csrf
+        @method('DELETE')
+        <button type="submit" style="width: 100%; background-color: #dc3545; color: white; padding: 0.85rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s;">
+            <i class="fas fa-trash-alt"></i> Delete User
+        </button>
+    </form>
+
 </div>
 @endsection

@@ -137,4 +137,18 @@ class UserController extends Controller
         // 5. Send them back to the user list with a success message
         return redirect('/users')->with('success', 'User account updated successfully.');
     }
+
+    public function destroy($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+
+        // Security check: Prevent the admin from deleting themselves
+        if (auth()->id() === $user->id) {
+            return redirect('/users')->with('error', 'Action denied: You cannot delete your own administrator account.');
+        }
+
+        $user->delete();
+
+        return redirect('/users')->with('success', 'User account has been permanently deleted.');
+    }
 }

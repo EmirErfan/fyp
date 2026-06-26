@@ -7,7 +7,7 @@
 <style>
     /* ── PAGE HEADER ── */
     .page-header {
-        margin-bottom: 1rem; /* Reduced from 2rem */
+        margin-bottom: 1rem;
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
@@ -15,7 +15,7 @@
         gap: 0.5rem;
     }
     .page-header h1 {
-        font-size: 1.5rem; /* Slightly smaller */
+        font-size: 1.5rem;
         font-weight: 800;
         color: var(--text-primary);
         letter-spacing: -0.04em;
@@ -47,7 +47,7 @@
     .card {
         background: var(--white);
         border: 1px solid var(--gray-2);
-        border-radius: 12px; /* Slightly tighter corners */
+        border-radius: 12px;
         transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
     }
     .card:hover {
@@ -56,18 +56,23 @@
         transform: translateY(-2px);
     }
 
-    /* ── STAT CARDS ── */
+    /* ── TOP ROW & STAT CARDS ── */
+    .top-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr; 
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(2, 1fr); 
         gap: 1rem;
-        margin-bottom: 1rem; /* Reduced margin */
     }
     .stat-card {
-        padding: 1rem 1.25rem; /* Reduced padding */
+        padding: 1rem 1.25rem;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem; /* Tighter gap */
+        gap: 0.5rem;
         position: relative;
         overflow: hidden;
     }
@@ -100,7 +105,7 @@
         font-size: 0.8rem;
     }
     .stat-value {
-        font-size: 1.8rem; /* Smaller font to save space */
+        font-size: 1.8rem;
         font-weight: 800;
         color: var(--text-primary);
         letter-spacing: -0.04em;
@@ -111,27 +116,13 @@
         font-size: 0.7rem;
         color: var(--text-muted);
     }
-    .stat-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: 0.65rem;
-        font-weight: 600;
-        padding: 0.15rem 0.5rem;
-        border-radius: 100px;
-        background: #edfaf3;
-        color: #15803d;
-        border: 1px solid #bbf7d0;
-    }
-    .dot-pulse { animation: dotpulse 2s ease-in-out infinite; }
-    @keyframes dotpulse { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
 
     /* ── SECTION HEADING ── */
     .section-head {
         display: flex;
         align-items: center;
         gap: 0.6rem;
-        margin-bottom: 0.75rem; /* Reduced */
+        margin-bottom: 0.75rem;
     }
     .section-head-title {
         font-size: 0.65rem;
@@ -147,7 +138,7 @@
     /* ── BOTTOM ROW ── */
     .bottom-row {
         display: grid;
-        grid-template-columns: 2fr 1fr; /* Give quick actions more horizontal space */
+        grid-template-columns: 1fr 1fr; /* 50/50 Split */
         gap: 1rem;
     }
     .panel-card { padding: 1.25rem; }
@@ -162,17 +153,17 @@
         border-bottom: 1px solid var(--gray-2);
     }
 
-    /* Quick Actions - NOW IN A 2-COLUMN GRID */
+    /* Quick Actions */
     .quick-actions { 
         display: grid; 
-        grid-template-columns: 1fr 1fr; /* 2 columns to save vertical space! */
+        grid-template-columns: 1fr 1fr;
         gap: 0.5rem; 
     }
     .qa-btn {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.5rem 0.75rem; /* Tighter padding */
+        padding: 0.5rem 0.75rem;
         border-radius: 8px;
         text-decoration: none;
         font-size: 0.8rem;
@@ -198,7 +189,6 @@
     }
     .qa-btn:hover .qa-icon { background: var(--pink-mid); }
     
-    /* Make the last odd item span across both columns so it looks neat */
     .qa-btn:last-child:nth-child(odd) {
         grid-column: span 2;
     }
@@ -210,11 +200,12 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 1.25rem !important; /* Compressed padding */
+        padding: 1.25rem !important;
         background: linear-gradient(160deg, var(--white) 60%, var(--pink-lt)) !important;
+        height: 100%; 
     }
     .profile-avatar-lg {
-        width: 50px; height: 50px; /* Smaller avatar */
+        width: 50px; height: 50px;
         background: var(--pink);
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
@@ -248,13 +239,26 @@
         margin: 0;
     }
 
+    /* Chart Select Dropdown */
+    .chart-select {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--gray-2);
+        background: #f8fafc;
+        color: var(--text-muted);
+        cursor: pointer;
+        outline: none;
+        font-weight: 600;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 960px) {
-        .bottom-row { grid-template-columns: 1fr; }
+        .top-row, .bottom-row { grid-template-columns: 1fr; }
         .stats-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 600px) {
-        .quick-actions { grid-template-columns: 1fr; }
+        .stats-grid, .quick-actions { grid-template-columns: 1fr; }
         .page-header h1 { font-size: 1.3rem; }
         .page-header { flex-direction: column; align-items: flex-start; }
     }
@@ -271,49 +275,41 @@
         <span class="header-date">{{ now()->format('D, d M Y') }}</span>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card card" style="--card-glow: rgba(219,39,119,0.08); --icon-bg: var(--pink-lt);">
-            <div class="stat-top">
-                <span class="stat-label">Participants</span>
-                <div class="stat-icon"><i class="fas fa-users" style="color:var(--pink);"></i></div>
+    <div class="top-row">
+        <div class="stats-grid">
+            <div class="stat-card card" style="--card-glow: rgba(219,39,119,0.08); --icon-bg: var(--pink-lt);">
+                <div class="stat-top">
+                    <span class="stat-label">Participants</span>
+                    <div class="stat-icon"><i class="fas fa-users" style="color:var(--pink);"></i></div>
+                </div>
+                <div class="stat-value">{{ $totalParticipants ?? 5 }}</div>
+                <div class="stat-sub">Total enrolled participants</div>
             </div>
-            <div class="stat-value">{{ $totalParticipants ?? 5 }}</div>
-            <div class="stat-sub">Total enrolled participants</div>
+
+            <div class="stat-card card" style="--card-glow: rgba(37,99,235,0.07); --icon-bg: #eff6ff;">
+                <div class="stat-top">
+                    <span class="stat-label">Test Sessions</span>
+                    <div class="stat-icon"><i class="fas fa-vial" style="color:#2563eb;"></i></div>
+                </div>
+                <div class="stat-value">{{ $totalSessions ?? 12 }}</div>
+                <div class="stat-sub">All-time sessions run</div>
+            </div>
         </div>
 
-        <div class="stat-card card" style="--card-glow: rgba(37,99,235,0.07); --icon-bg: #eff6ff;">
-            <div class="stat-top">
-                <span class="stat-label">Test Sessions</span>
-                <div class="stat-icon"><i class="fas fa-vial" style="color:#2563eb;"></i></div>
+        <div class="panel-card card profile-panel">
+            <div class="profile-avatar-lg">
+                {{ strtoupper(substr(auth()->user()->name ?? 'S', 0, 1)) }}
             </div>
-            <div class="stat-value">{{ $totalSessions ?? 12 }}</div>
-            <div class="stat-sub">All-time sessions run</div>
-        </div>
-
-        <div class="stat-card card" style="--card-glow: rgba(124,58,237,0.07); --icon-bg: #f5f3ff;">
-            <div class="stat-top">
-                <span class="stat-label">Methods</span>
-                <div class="stat-icon"><i class="fas fa-clipboard-list" style="color:#7c3aed;"></i></div>
-            </div>
-            <div class="stat-value">3</div>
-            <div class="stat-sub">Validated stress protocols</div>
-        </div>
-
-        <div class="stat-card card" style="--card-glow: rgba(21,128,61,0.06); --icon-bg: #f0fdf4;">
-            <div class="stat-top">
-                <span class="stat-label">Status</span>
-                <div class="stat-icon"><i class="fas fa-circle-check" style="color:#15803d;"></i></div>
-            </div>
-            <div class="stat-value" style="font-size:1.35rem;font-family:var(--sans);letter-spacing:-0.02em;">Online</div>
-            <span class="stat-badge">
-                <svg class="dot-pulse" width="6" height="6" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"/></svg>
-                System Active
-            </span>
+            <div class="profile-name-lg">{{ auth()->user()->name ?? 'System Administrator' }}</div>
+            <span class="badge-pink">Authorized Access</span>
+            <p class="profile-desc">
+                Welcome to StressLab.<br>Your research data is securely logged and ready for export.
+            </p>
         </div>
     </div>
 
     <div class="section-head">
-        <span class="section-head-title">Quick Access</span>
+        <span class="section-head-title">Quick Access & Analytics</span>
         <div class="section-head-line"></div>
     </div>
 
@@ -345,16 +341,19 @@
             </div>
         </div>
 
-        <div class="panel-card card profile-panel">
-            <div class="panel-card-title" style="width:100%;text-align:left;">Researcher Profile</div>
-            <div class="profile-avatar-lg">
-                {{ strtoupper(substr(auth()->user()->name ?? 'S', 0, 1)) }}
+        <div class="panel-card card">
+            <div class="panel-card-title" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; padding-bottom: 0; margin-bottom: 0.5rem;">
+                <span>Pre-Test vs Post-Test Stress</span>
+                <select id="demographicFilter" class="chart-select" onchange="updateChartData()">
+                    <option value="gender">By Gender</option>
+                    <option value="age">By Age Group</option>
+                    <option value="education">By Education</option>
+                </select>
             </div>
-            <div class="profile-name-lg">{{ auth()->user()->name ?? 'System Administrator' }}</div>
-            <span class="badge-pink">Authorized Access</span>
-            <p class="profile-desc">
-                Welcome to StressLab.<br>Your research data is securely logged and ready for export.
-            </p>
+            
+            <div style="position: relative; height: 180px; width: 100%;">
+                <canvas id="deltaChart"></canvas>
+            </div>
         </div>
 
     </div>
@@ -378,7 +377,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($pendingRequests->take(5) as $request) <tr style="border-bottom: 1px solid var(--gray-1);">
+                        @foreach($pendingRequests->take(5) as $request) 
+                            <tr style="border-bottom: 1px solid var(--gray-1);">
                                 <td style="padding: 0.75rem 1rem; font-weight: 600; color: var(--text-primary);">{{ $request->name }}</td>
                                 <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">{{ $request->email }}</td>
                                 <td style="padding: 0.75rem 1rem; text-align: right;">
@@ -399,4 +399,65 @@
             @endif
         </div>
     @endif
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const chartDataSets = @json($chartData);
+
+        const ctx = document.getElementById('deltaChart').getContext('2d');
+        let deltaChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartDataSets.gender.labels,
+                datasets: [
+                    {
+                        label: 'Pre-Test Average',
+                        data: chartDataSets.gender.pre,
+                        backgroundColor: 'rgba(37, 99, 235, 0.8)', // Blue
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Post-Test Average',
+                        data: chartDataSets.gender.post,
+                        backgroundColor: 'rgba(219, 39, 119, 0.8)', // Pink
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            font: { size: 10, family: 'system-ui' }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [4, 4], color: '#f1f5f9' },
+                        ticks: { font: { size: 10 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+
+        function updateChartData() {
+            const filter = document.getElementById('demographicFilter').value;
+            const newData = chartDataSets[filter];
+
+            deltaChart.data.labels = newData.labels;
+            deltaChart.data.datasets[0].data = newData.pre;
+            deltaChart.data.datasets[1].data = newData.post;
+            deltaChart.update();
+        }
+    </script>
 @endsection

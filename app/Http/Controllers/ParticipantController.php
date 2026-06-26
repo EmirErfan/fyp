@@ -49,8 +49,10 @@ class ParticipantController extends Controller
             'name' => 'required|string|max:255',
             'dob' => 'required|date',
             'gender' => 'required|in:Male,Female',
-            'email' => 'nullable|email|max:255', 
-            'phone' => ['nullable', 'regex:/^0[0-9]{9,10}$/'],
+            // Added unique validation for email
+            'email' => 'nullable|email|max:255|unique:participants,email', 
+            // Added unique validation for phone
+            'phone' => ['nullable', 'regex:/^0[0-9]{9,10}$/', 'unique:participants,phone'],
             'occupation' => 'nullable|string|max:255',
             'education_level' => 'nullable|string|max:255',
             'color_blindness' => 'required|string',
@@ -58,6 +60,9 @@ class ParticipantController extends Controller
         ], [
             'phone.regex' => 'The phone number must start with 0 and contain exactly 10 or 11 digits (e.g., 0123456789). No dashes or spaces allowed.',
             'email.email' => 'Please enter a valid email address.',
+            // Added custom error messages
+            'email.unique' => 'This email address is already registered to another participant.',
+            'phone.unique' => 'This phone number is already registered to another participant.',
         ]);
 
         Participant::create([
@@ -95,8 +100,10 @@ class ParticipantController extends Controller
             'name' => 'required|string|max:255',
             'dob' => 'required|date',
             'gender' => 'required|in:Male,Female',
-            'email' => 'nullable|email|max:255', 
-            'phone' => ['nullable', 'regex:/^0[0-9]{9,10}$/'],
+            // Added unique validation, but appending the $id so it ignores the current participant
+            'email' => 'nullable|email|max:255|unique:participants,email,' . $id, 
+            // Added unique validation, but appending the $id so it ignores the current participant
+            'phone' => ['nullable', 'regex:/^0[0-9]{9,10}$/', 'unique:participants,phone,' . $id],
             'occupation' => 'nullable|string|max:255',
             'education_level' => 'nullable|string|max:255',
             'color_blindness' => 'required|string',
@@ -104,6 +111,9 @@ class ParticipantController extends Controller
         ], [
             'phone.regex' => 'The phone number must start with 0 and contain exactly 10 or 11 digits (e.g., 0123456789). No dashes or spaces allowed.',
             'email.email' => 'Please enter a valid email address.',
+            // Added custom error messages
+            'email.unique' => 'This email address is already registered to another participant.',
+            'phone.unique' => 'This phone number is already registered to another participant.',
         ]);
 
         $participant = Participant::findOrFail($id);
@@ -143,6 +153,11 @@ class ParticipantController extends Controller
     public function show($id)
     {
         $participant = \App\Models\Participant::findOrFail($id);
+        
+      
+        if (auth()->user()->role === 'researcher' && $participant->user_id !== auth()->id()) {
+            abort(403);
+        }
         
         $allTests = \App\Models\TestSession::where('participant_id', $id)
                         ->orderBy('created_at', 'desc')
