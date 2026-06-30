@@ -1,3 +1,5 @@
+@extends('layouts.guest-test')
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

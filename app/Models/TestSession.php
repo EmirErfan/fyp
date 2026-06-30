@@ -9,7 +9,14 @@ class TestSession extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'participant_id', 'test_id', 'test_schedule_id'];
+    protected $fillable = [
+    'participant_id',
+    'test_id',
+    'test_schedule_id',
+    'user_id',
+    'status',
+    'access_code',
+    ];
 
     // --- "Belongs To" Relationships (Going up to the parents) ---
     

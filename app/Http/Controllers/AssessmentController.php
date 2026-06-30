@@ -8,10 +8,32 @@ use App\Models\Assessment;
 
 class AssessmentController extends Controller
 {
+    /**
+     * SECURITY HELPER
+     * Allows access if the user is a logged-in researcher OR a guest who entered the correct PIN.
+     */
+    private function authorizeSessionAccess($id)
+    {
+        if (!auth()->check() && session('active_guest_session') != $id) {
+            abort(403, 'Unauthorized access. Please join using a valid test PIN on the homepage.');
+        }
+    }
+
+    // Shows the Informed Consent page
+    public function showConsent($id)
+    {
+        $this->authorizeSessionAccess($id);
+
+        $session = \App\Models\TestSession::with(['participant', 'test'])->findOrFail($id);
+        
+        return view('assessments.consent', compact('session'));
+    }
+
     // Shows the Pre-Test Form
     public function createPreTest($id)
     {
-        // Find the specific session we clicked on
+        $this->authorizeSessionAccess($id);
+
         $testSession = TestSession::with('participant')->findOrFail($id);
 
         return view('assessments.pre_test', compact('testSession'));
@@ -20,6 +42,8 @@ class AssessmentController extends Controller
     // Saves the Pre-Test Answers & Redirects to the Launch Pad!
     public function storePreTest(Request $request, $id)
     {
+        $this->authorizeSessionAccess($id);
+
         $request->validate([
             'distress_item_01' => 'required|integer|min:1|max:5',
             'distress_item_02' => 'required|integer|min:1|max:5',
@@ -46,21 +70,31 @@ class AssessmentController extends Controller
             'eustress_item_04' => $request->eustress_item_04,
         ]);
 
-        // FIXED: Send them straight to the Launch Pad so they can open the dedicated window!
         return redirect("/test-sessions/{$id}/launch");
     }
 
-    // Shows the Informed Consent page
-    public function showConsent($id)
+    // Shows the Launch Pad for the dedicated test window
+    public function launchTest($id)
     {
-        $session = \App\Models\TestSession::with(['participant', 'test'])->findOrFail($id);
+        $this->authorizeSessionAccess($id);
+
+        $session = TestSession::with(['participant', 'test'])->findOrFail($id);
         
-        return view('assessments.consent', compact('session'));
+        $testUrl = "/test-sessions/{$id}/tsst"; 
+        if ($session->test->test_type == 'Stroop Test') {
+            $testUrl = "/test-sessions/{$id}/stroop";
+        } elseif ($session->test->test_type == 'MIST') {
+            $testUrl = "/test-sessions/{$id}/mist";
+        }
+
+        return view('assessments.launch', compact('session', 'testUrl'));
     }
 
     // Shows the Post-Test Form
     public function createPostTest($id)
     {
+        $this->authorizeSessionAccess($id);
+
         $session = TestSession::with('participant')->findOrFail($id);
 
         return view('assessments.post-test', compact('session'));
@@ -69,7 +103,8 @@ class AssessmentController extends Controller
     // Saves the Post-Test Answers
     public function storePostTest(Request $request, $id)
     {
-        // 1. Validate the 9 questions
+        $this->authorizeSessionAccess($id);
+
         $request->validate([
             'distress_item_01' => 'required|integer|min:1|max:5',
             'distress_item_02' => 'required|integer|min:1|max:5',
@@ -82,7 +117,6 @@ class AssessmentController extends Controller
             'eustress_item_04' => 'required|integer|min:1|max:5',
         ]);
 
-        // 2. Save it to the database, ensuring we label it as type 'post'!
         Assessment::create([
             'test_session_id' => $id,
             'type' => 'post', 
@@ -97,37 +131,19 @@ class AssessmentController extends Controller
             'eustress_item_04' => $request->eustress_item_04,
         ]);
 
-        // 3. Mark the session as Completed
-        $session = TestSession::findOrFail($id);
-        $session->update(['status' => 'Completed']);
+        // $session = TestSession::findOrFail($id);
+        // $session->update(['status' => 'Completed']);
 
-        // 4. Send them to the Final Result Summary screen!
         return redirect("/test-sessions/{$id}/result-summary");
-    }
-
-    // Shows the Launch Pad for the dedicated test window
-    public function launchTest($id)
-    {
-        $session = TestSession::with(['participant', 'test'])->findOrFail($id);
-        
-        // Figure out which test URL to give the button
-        $testUrl = "/test-sessions/{$id}/tsst"; // Default
-        if ($session->test->test_type == 'Stroop Test') {
-            $testUrl = "/test-sessions/{$id}/stroop";
-        } elseif ($session->test->test_type == 'MIST') {
-            $testUrl = "/test-sessions/{$id}/mist";
-        }
-
-        return view('assessments.launch', compact('session', 'testUrl'));
     }
 
     // Shows the Final Results to the Participant
     public function showResultSummary($id)
     {
-        // Load the session, participant, the math results, and the assessments
+        $this->authorizeSessionAccess($id);
+
         $session = TestSession::with(['participant', 'result', 'assessments'])->findOrFail($id);
 
-        // Separate the pre-test and post-test data
         $preTest = $session->assessments->where('type', 'pre')->first();
         $postTest = $session->assessments->where('type', 'post')->first();
 

@@ -1,44 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiment Complete - Results</title>
-    <style>
-        body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
-        .result-container { max-width: 900px; margin: 50px auto; padding: 20px; }
-        
-        .header-box { text-align: center; margin-bottom: 40px; }
-        .header-box h1 { color: #198754; font-size: 36px; margin-bottom: 10px; }
-        .header-box p { color: #555; font-size: 18px; }
+@extends(auth()->check() ? 'layouts.app' : 'layouts.guest-test')
 
-        .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px; margin-bottom: 30px; }
-        .card-title { font-size: 22px; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px; color: #333; }
+@section('styles')
+<style>
+    body { background-color: #f4f7f6; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .result-container { max-width: 900px; margin: 50px auto; padding: 20px; }
+    
+    .header-box { text-align: center; margin-bottom: 40px; }
+    .header-box h1 { color: #198754; font-size: 36px; margin-bottom: 10px; }
+    .header-box p { color: #555; font-size: 18px; }
 
-        /* Grid for Stats */
-        .stat-grid { display: flex; gap: 20px; text-align: center; flex-wrap: wrap; justify-content: center; }
-        .stat-box { flex: 1; min-width: 140px; background: #f8f9fa; padding: 25px 15px; border-radius: 8px; border: 1px solid #e9ecef; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .stat-number { font-size: 38px; font-weight: 900; margin-bottom: 5px; }
-        .stat-label { font-size: 14px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;}
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px; margin-bottom: 30px; }
+    .card-title { font-size: 22px; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px; color: #333; }
 
-        .text-primary { color: #0d6efd; }
-        .text-danger { color: #dc3545; }
-        .text-warning { color: #fd7e14; }
-        .text-success { color: #198754; }
-        .text-info { color: #0dcaf0; }
+    /* Grid for Stats */
+    .stat-grid { display: flex; gap: 20px; text-align: center; flex-wrap: wrap; justify-content: center; }
+    .stat-box { flex: 1; min-width: 140px; background: #f8f9fa; padding: 25px 15px; border-radius: 8px; border: 1px solid #e9ecef; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+    .stat-number { font-size: 38px; font-weight: 900; margin-bottom: 5px; }
+    .stat-label { font-size: 14px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;}
 
-        /* Comparison Table */
-        .compare-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .compare-table th, .compare-table td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 16px;}
-        .compare-table th { background: #f8f9fa; color: #333; }
-        .compare-table td.label { text-align: left; font-weight: bold; color: #555; }
-        
-        /* Researcher Button */
-        .dashboard-btn { display: block; width: 100%; background: #212529; color: white; text-align: center; padding: 18px; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 8px; transition: 0.2s; margin-top: 40px;}
-        .dashboard-btn:hover { background: #000; }
-    </style>
-</head>
-<body>
+    .text-primary { color: #0d6efd; }
+    .text-danger { color: #dc3545; }
+    .text-warning { color: #fd7e14; }
+    .text-success { color: #198754; }
+    .text-info { color: #0dcaf0; }
+
+    /* Comparison Table */
+    .compare-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .compare-table th, .compare-table td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 16px;}
+    .compare-table th { background: #f8f9fa; color: #333; }
+    .compare-table td.label { text-align: left; font-weight: bold; color: #555; }
+    
+    /* Researcher Button */
+    .dashboard-btn { display: block; width: 100%; background: #212529; color: white; text-align: center; padding: 18px; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 8px; transition: 0.2s; margin-top: 40px;}
+    .dashboard-btn:hover { background: #000; }
+</style>
+@endsection
+
+@section('content')
 
 @php
     // ==========================================
@@ -73,6 +71,10 @@
     $accuracyLabel = ($testName == 'Stroop Test') ? 'Color Accuracy' : 'Math Accuracy';
 @endphp
 
+<!-- ========================================== -->
+<!-- 🧑‍🔬 RESEARCHER VIEW (FULL DATA)            -->
+<!-- ========================================== -->
+@auth
 <div class="result-container">
     
     <div class="header-box">
@@ -229,16 +231,14 @@
     </div>
 
     <div style="text-align: center; margin-top: 50px;">
-        <p style="color: #666; font-style: italic;">Please return the device to the researcher.</p>
-        <a href="/dashboard" class="dashboard-btn">Researcher: Return to Dashboard</a>
+        <a href="/test-sessions" class="dashboard-btn">Researcher: Return to Sessions</a>
     </div>
 
 </div>
 
+<!-- Modal -->
 <div id="dessModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
-    
     <div style="background-color: #fff; margin: 5% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
             <h2 style="margin: 0; color: #333;">Complete DESS Scale Comparison</h2>
             <span onclick="closeDessModal()" style="color: #aaa; font-size: 32px; font-weight: bold; cursor: pointer; line-height: 1;">&times;</span>
@@ -315,7 +315,6 @@
                 @endif
             </tbody>
         </table>
-
         <div style="margin-top: 25px; text-align: right;">
             <button onclick="closeDessModal()" style="padding: 10px 20px; background-color: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px;">Close Comparison</button>
         </div>
@@ -324,24 +323,45 @@
 
 <script>
     var modal = document.getElementById("dessModal");
-
     function openDessModal() {
         modal.style.display = "block";
-        document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
+        document.body.style.overflow = "hidden";
     }
-
     function closeDessModal() {
         modal.style.display = "none";
-        document.body.style.overflow = "auto"; // Re-enable scrolling
+        document.body.style.overflow = "auto";
     }
-
-    // Close modal if user clicks outside the white box
     window.onclick = function(event) {
         if (event.target == modal) {
             closeDessModal();
         }
     }
 </script>
+@endauth
 
-</body>
-</html>
+
+<!-- ========================================== -->
+<!-- 👤 PARTICIPANT VIEW (MINIMAL THANK YOU)    -->
+<!-- ========================================== -->
+@guest
+<div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 12px; margin-top: 3rem; max-width: 600px; margin-left: auto; margin-right: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+    <div style="width: 70px; height: 70px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <i class="fas fa-check" style="font-size: 30px; color: #16a34a;"></i>
+    </div>
+    
+    <h2 style="color: #16a34a; margin-bottom: 1rem; font-size: 28px; font-weight: 800;">Test Completed Successfully!</h2>
+    <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 0.5rem;">
+        Thank you, <strong>{{ $session->participant->name ?? 'Participant' }}</strong>, for your time. Your cognitive and psychological responses have been securely recorded.
+    </p>
+    
+    <p style="color: #64748b; font-style: italic; font-size: 14px; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
+        Please inform the researcher that you have finished, or return the device to them.
+    </p>
+
+    <a href="/" style="display: inline-block; margin-top: 1.5rem; background: #9b1c4a; color: white; padding: 0.85rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 15px; transition: background 0.2s, transform 0.2s; box-shadow: 0 4px 15px rgba(155, 28, 74, 0.2);">
+        Exit Test Environment
+    </a>
+</div>
+@endguest
+
+@endsection

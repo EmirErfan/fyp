@@ -266,7 +266,17 @@
             <h1>Session <em>Report</em></h1>
             <p>Final experiment output for {{ $session->participant->name }}</p>
         </div>
-        <a href="/test-sessions" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Sessions</a>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            @if(!$session->result)
+            <form action="{{ route('test-sessions.send-email', $session->id) }}" method="POST" style="margin:0;">
+                @csrf
+                <button type="submit" class="btn-back" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; cursor: pointer; {{ !$session->participant->email ? 'opacity: 0.5; cursor: not-allowed;' : '' }}" title="Send Access Code via Email" {{ !$session->participant->email ? 'disabled' : '' }}>
+                    <i class="fas fa-envelope"></i> Send Email
+                </button>
+            </form>
+            @endif
+            <a href="/test-sessions" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Sessions</a>
+        </div>
     </div>
 
     <!-- ROW 1: Info + Results -->

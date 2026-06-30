@@ -8,6 +8,8 @@ use App\Models\TestSchedule;
 use App\Models\Participant;
 use App\Models\Test;
 use App\Models\User; // We need this for the researcher!
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TestAccessCodeMail;
 
 class TestSessionController extends Controller
 {
@@ -97,79 +99,87 @@ class TestSessionController extends Controller
     // Saves the assignment
     public function store(Request $request)
     {
-        // 1. Validate the form
         $request->validate([
-            'test_schedule_id' => 'required|exists:test_schedules,id',
-            'participant_id' => 'required|exists:participants,id',
-            'test_id' => 'required|exists:tests,id',
+            'participant_id' => 'required',
+            'test_id' => 'required',
+            'test_schedule_id' => 'required',
         ]);
 
-        $schedule = \App\Models\TestSchedule::findOrFail($request->test_schedule_id);
-        $participant = \App\Models\Participant::findOrFail($request->participant_id);
+        // 1. Generate the random 6-character code right before saving
+        $accessCode = strtoupper(\Illuminate\Support\Str::random(6));
 
-        if (auth()->user()->role === 'researcher') {
-            if ($schedule->user_id !== auth()->id() || $participant->user_id !== auth()->id()) {
-                abort(403);
-            }
-        }
-
-        // 3. Create the massive link in the pivot table!
+        // 2. Save it to the database, including the logged-in researcher's ID!
         TestSession::create([
-            'user_id' => auth()->id(),
-            'test_schedule_id' => $request->test_schedule_id,
             'participant_id' => $request->participant_id,
             'test_id' => $request->test_id,
+            'test_schedule_id' => $request->test_schedule_id,
+            'access_code' => $accessCode,
+            'user_id' => auth()->id(), // <-- THIS IS THE MISSING PIECE
         ]);
 
-        // 4. Send them back to the SPECIFIC schedule page instead of the main list!
-        return redirect('/schedules/' . $request->test_schedule_id)->with('success', 'Participant assigned to session successfully!');
+        return redirect('/test-sessions')->with('success', 'Session created successfully!');
     }
 
     public function storeRecordings(Request $request, $id)
-    {
-        try {
-            $session = TestSession::findOrFail($id);
-            if (auth()->user()->role === 'researcher' && $session->user_id !== auth()->id()) {
-                return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
-            }
+{
+    // 1. SECURITY CHECK: Ensure it's the session owner (guest or researcher)
+    if (!auth()->check() && session('active_guest_session') != $id) {
+        return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+    }
 
-            // 1. Check for the video
-            if (!$request->hasFile('face_video')) {
-                return response()->json(['status' => 'error', 'message' => 'Video missing.'], 400);
-            }
+    // 2. ONLY check the role IF a user is actually logged in
+    $userRole = auth()->check() ? auth()->user()->role : 'guest';
 
-            $destinationPath = storage_path('app/public/recordings');
-            
-            // 2. Process and save the single file
-            $filename = "session_{$id}_combined.webm";
+    // 3. Now proceed with your file saving logic
+    try {
+        $destinationPath = storage_path('app/public/recordings');
+        $facePath = null;
+        $screenPath = null;
+
+        // Force move the videos & save their paths
+        if ($request->hasFile('face_video')) {
+            $filename = "session_{$id}_face.webm";
             $request->file('face_video')->move($destinationPath, $filename);
-            $videoPath = 'recordings/' . $filename; 
+            $facePath = 'recordings/' . $filename;
+        }
+        
+        if ($request->hasFile('screen_video')) {
+            $filename = "session_{$id}_screen.webm";
+            $request->file('screen_video')->move($destinationPath, $filename);
+            $screenPath = 'recordings/' . $filename;
+        }
 
-            // 3. AUTO-SAVE THE RESULTS TO THE DATABASE!
-            \App\Models\Result::updateOrCreate(
-                ['test_session_id' => $id],
-                [
-                    'accuracy_rate' => $request->input('accuracy_rate') ?? 0,
-                    'total_error' => $request->input('total_error') ?? $request->input('total_errors') ?? 0,
-                    'total_attempts' => $request->input('total_attempts'),
-                    'correct_answers' => $request->input('correct_answers'),
-                    'average_reaction_time' => $request->input('average_reaction_time') ?? 0,
-                    
-                    // Changed to match your database schema!
-                    'face_video_path' => $videoPath, 
-                    'screen_video_path' => $videoPath,
-                ]
-            );
+        // AUTO-SAVE THE RESULTS TO THE DATABASE!
+        \App\Models\Result::updateOrCreate(
+            ['test_session_id' => $id],
+            [
+                'accuracy_rate' => $request->input('accuracy_rate', 0),
+                'total_error' => $request->input('total_error') ?? $request->input('total_errors') ?? 0,
+                'average_reaction_time' => $request->input('average_reaction_time', 0),
+                'face_video_path' => $facePath,
+                'screen_video_path' => $screenPath,
+            ]
+        );
+        
+        return response()->json(['status' => 'success']);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    }
+}
 
-            return response()->json(['status' => 'success', 'message' => 'Recordings and Results Auto-Saved!']);
+    public function sendAccessCodeEmail($id)
+    {
+        $session = TestSession::with(['participant', 'test', 'testSchedule'])->findOrFail($id);
+        
+        if (!$session->participant->email) {
+            return back()->with('error', 'Participant does not have an email address on file.');
+        }
 
+        try {
+            Mail::to($session->participant->email)->send(new TestAccessCodeMail($session, $session->participant));
+            return back()->with('success', 'Access code email sent successfully!');
         } catch (\Exception $e) {
-            // THIS IS THE MAGIC TRICK:
-            // If the database crashes, this catches it and sends the EXACT error message to your screen!
-            return response()->json([
-                'status' => 'error', 
-                'message' => 'DATABASE CRASH: ' . $e->getMessage()
-            ], 500);
+            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
         }
     }
 }

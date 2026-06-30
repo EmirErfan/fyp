@@ -275,6 +275,21 @@
         background: var(--pink-deep);
         box-shadow: 0 3px 12px rgba(200,24,74,0.3);
     }
+    .btn-email {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .btn-email:hover:not(:disabled) {
+        background: #dbeafe;
+        border-color: #93c5fd;
+    }
+    .btn-email:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 
     /* Empty state */
     .empty-state {
@@ -295,8 +310,8 @@
     .empty-state p { font-size: 0.82rem; }
 
     @media (max-width: 700px) {
-        .data-table th:nth-child(4),
-        .data-table td:nth-child(4) { display: none; }
+        .data-table th:nth-child(5),
+        .data-table td:nth-child(5) { display: none; }
     }
 </style>
 @endsection
@@ -352,6 +367,7 @@
                             <th>Participant</th>
                             <th>Test Type</th>
                             <th>Date &amp; Time</th>
+                            <th>Access Code</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -374,6 +390,15 @@
                                     <div class="time">{{ \Carbon\Carbon::parse($session->testSchedule->time)->format('h:i A') }}</div>
                                 </div>
                             </td>
+                            <td style="vertical-align: middle;">
+                                @if($session->access_code)
+                                    <span style="background: #f0f7ff; color: #1a73e8; padding: 6px 12px; border-radius: 6px; font-family: monospace; font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; border: 1px solid #bfdbfe;">
+                                        {{ $session->access_code }}
+                                    </span>
+                                @else
+                                    <span style="color: #9ca3af; font-size: 0.9rem; font-style: italic;">N/A</span>
+                                @endif
+                            </td>
                             <td>
                                 @if($session->result)
                                     <span class="status complete">
@@ -388,6 +413,12 @@
                             <td>
                                 <div class="action-group">
                                     @if(!$session->result)
+                                        <form action="{{ route('test-sessions.send-email', $session->id) }}" method="POST" style="margin:0; padding:0; display:inline-block;">
+                                            @csrf
+                                            <button type="submit" class="btn-action btn-email" title="Send Access Code via Email" {{ !$session->participant->email ? 'disabled' : '' }}>
+                                                <i class="fas fa-envelope"></i> Email
+                                            </button>
+                                        </form>
                                         <a href="/test-sessions/{{ $session->id }}/consent" class="btn-action btn-start">
                                             <i class="fas fa-play"></i> Start Test
                                         </a>

@@ -123,35 +123,11 @@
         }
 
         .hero-ctas {
-            display: flex; align-items: center;
-            gap: 0.75rem; flex-wrap: wrap;
+            display: block; 
             margin-bottom: 2.5rem;
+            margin-top: 1rem;
         }
-        .cta-primary {
-            display: inline-flex; align-items: center; gap: 0.55rem;
-            background: var(--pink-dark); color: var(--white); text-decoration: none;
-            padding: 0.85rem 1.8rem; border-radius: 100px;
-            font-size: 0.95rem; font-weight: 600;
-            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
-            white-space: nowrap;
-            box-shadow: 0 4px 24px rgba(155,28,74,0.3);
-        }
-        .cta-primary:hover {
-            background: var(--pink-mid);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(155,28,74,0.4);
-        }
-        .cta-play {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 48px; height: 48px; border-radius: 50%;
-            background: var(--white); border: 1.5px solid var(--border);
-            color: var(--pink-dark);
-            box-shadow: 0 2px 12px var(--shadow-pink);
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-        }
-        .cta-play:hover { transform: scale(1.1); box-shadow: 0 4px 20px var(--shadow-pink); }
-
+        
         .hero-right {
             position: relative; z-index: 1;
             display: flex; align-items: center; justify-content: center;
@@ -329,13 +305,39 @@
         </p>
 
         <div class="hero-ctas">
-            <a href="/login" class="cta-primary">
-                <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/></svg>
-                Go to Dashboard
-            </a>
-            <a href="#contact" class="cta-play" title="Request Access">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </a>
+            @if(session('error'))
+                <div style="color: #c53030; background: #fff5f5; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; border: 1px solid #feb2b2; display: inline-block; animation: fadeIn 0.3s ease-in-out;">
+                    <i class="fas fa-exclamation-circle" style="margin-right: 5px;"></i> {{ session('error') }}
+                </div>
+            @endif
+
+            <form action="/join" method="POST" style="display: flex; gap: 0.5rem; max-width: 420px; width: 100%;">
+                @csrf
+                <input 
+                    type="text" 
+                    name="access_code" 
+                    placeholder="Enter 6-digit PIN..." 
+                    required 
+                    maxlength="6" 
+                    autocomplete="off"
+                    style="flex: 1; padding: 0.85rem 1.5rem; font-size: 1.1rem; font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; color: var(--ink); background: var(--white); border: 2px solid var(--border); border-radius: 50px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+                    onfocus="this.style.borderColor='var(--pink-dark)'; this.style.boxShadow='0 0 0 3px var(--shadow-pink)';"
+                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';"
+                >
+                
+                <button 
+                    type="submit" 
+                    style="background: var(--pink-dark); color: var(--white); border: none; padding: 0.85rem 2rem; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 4px 15px var(--shadow-pink); white-space: nowrap;"
+                    onmouseover="this.style.background='var(--pink-mid)'; this.style.transform='translateY(-1px)';"
+                    onmouseout="this.style.background='var(--pink-dark)'; this.style.transform='translateY(0)';"
+                >
+                    Start Test <span style="margin-left: 5px;">&rarr;</span>
+                </button>
+            </form>
+
+            <p style="font-size: 0.85rem; color: var(--ink-3); margin-top: 1rem; margin-left: 0.5rem;">
+                Are you a researcher? <a href="/login" style="color: var(--pink-dark); font-weight: 600; text-decoration: none;">Log in here</a>.
+            </p>
         </div>
     </div>
     
@@ -455,12 +457,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const toast = document.getElementById('successToast');
             if (toast) {
-                // Slide in slightly after page loads for a smooth effect
                 setTimeout(() => {
                     toast.classList.add('show');
                 }, 100);
 
-                // Slide out after 4.5 seconds
                 setTimeout(() => {
                     toast.classList.remove('show');
                 }, 4500);

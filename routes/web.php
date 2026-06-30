@@ -37,9 +37,61 @@ Route::post('/reset-password', [\App\Http\Controllers\PasswordResetController::c
 
 Route::post('/request-access', [AccessRequestController::class, 'store']);
 
+
 /*
 |--------------------------------------------------------------------------
-| SECURE ROUTES (MUST BE LOGGED IN)
+| GUEST / KAHOOT TEST TAKING ROUTES (NO LOGIN REQUIRED)
+|--------------------------------------------------------------------------
+*/
+
+// KAHOOT-STYLE JOIN ROUTE (ONE-TIME USE)
+Route::post('/join', function (\Illuminate\Http\Request $request) {
+    $request->validate(['access_code' => 'required|string']);
+    
+    // Find the session by the Kahoot PIN
+    $session = \App\Models\TestSession::where('access_code', strtoupper($request->access_code))->first();
+    
+    if (!$session) {
+        return back()->with('error', 'Invalid Test Code. Please check and try again.');
+    }
+    
+    // ONE-TIME CHECK: Prevent joining if the test is already completed!
+    if ($session->status === 'Completed' || $session->result) {
+        return back()->with('error', 'This test code has already been used and is expired.');
+    }
+    
+    // Grant temporary guest access via PHP session
+    session(['active_guest_session' => $session->id]);
+    
+    // Redirect them straight to the consent form
+    return redirect("/test-sessions/{$session->id}/consent");
+});
+
+// ASSESSMENTS & CONSENT (Publicly accessible via PIN authorization)
+Route::get('/test-sessions/{id}/consent', [AssessmentController::class, 'showConsent']);
+Route::get('/test-sessions/{id}/pre-test', [AssessmentController::class, 'createPreTest']);
+Route::post('/test-sessions/{id}/pre-test', [AssessmentController::class, 'storePreTest']);
+Route::get('/test-sessions/{id}/post-test', [AssessmentController::class, 'createPostTest']);
+Route::post('/test-sessions/{id}/post-test', [AssessmentController::class, 'storePostTest']);
+
+// LAUNCH PAD SCREEN
+Route::get('/test-sessions/{id}/launch', [AssessmentController::class, 'launchTest']);
+
+// INTERACTIVE TESTS
+Route::get('/test-sessions/{id}/stroop', [StressTestController::class, 'stroop']);
+Route::get('/test-sessions/{id}/mist', [StressTestController::class, 'mist']);
+Route::get('/test-sessions/{id}/tsst', [StressTestController::class, 'tsst']);
+
+// VIDEO RECORDING UPLOAD API
+Route::post('/test-sessions/{id}/recordings', [TestSessionController::class, 'storeRecordings']);
+
+// FINAL RESULT SCREEN
+Route::get('/test-sessions/{id}/result-summary', [AssessmentController::class, 'showResultSummary']);
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURE ROUTES (MUST BE LOGGED IN AS RESEARCHER/ADMIN)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -50,21 +102,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
-        // 1. DATA ACCESS CONTROL (Admin vs Researcher)
         if ($user->role === 'admin') {
-            // Admin sees everything
             $totalParticipants = \App\Models\Participant::count();
             $totalSessions = \App\Models\TestSession::count();
-            
             $participants = \App\Models\Participant::all()->keyBy('id');
             $sessions = \App\Models\TestSession::all()->keyBy('id');
         } else {
-            // Researcher only sees their own assigned participants and sessions
             $totalParticipants = \App\Models\Participant::where('user_id', $user->id)->count();
-            
             $participants = \App\Models\Participant::where('user_id', $user->id)->get()->keyBy('id');
-            
-            // Get sessions only for this researcher's participants
             $participantIds = $participants->pluck('id');
             $totalSessions = \App\Models\TestSession::whereIn('participant_id', $participantIds)->count();
             $sessions = \App\Models\TestSession::whereIn('participant_id', $participantIds)->get()->keyBy('id');
@@ -72,7 +117,6 @@ Route::middleware('auth')->group(function () {
 
         $pendingRequests = \App\Models\AccessRequest::where('status', 'pending')->latest()->get(); 
 
-        // 2. FETCH ASSESSMENTS (Filtered securely by the allowed sessions)
         $sessionIds = $sessions->pluck('id');
         $assessments = \Illuminate\Support\Facades\DB::table('assessments')
                         ->whereIn('test_session_id', $sessionIds)
@@ -85,7 +129,6 @@ Route::middleware('auth')->group(function () {
             'education' => ['High School' => ['pre'=>[],'post'=>[]], 'Bachelor' => ['pre'=>[],'post'=>[]], 'Master+' => ['pre'=>[],'post'=>[]]]
         ];
 
-        // 3. CALCULATE ANALYTICS
         foreach ($assessments as $sessionId => $sessionAssessments) {
             $pre = $sessionAssessments->where('type', 'pre')->first();
             $post = $sessionAssessments->where('type', 'post')->first();
@@ -95,7 +138,6 @@ Route::middleware('auth')->group(function () {
                 $participant = $participants->get($session->participant_id);
                 if ($participant) {
                     
-                    // Using Distress as the primary stress metric
                     $preScore = $pre->distress_item_01 + $pre->distress_item_02 + $pre->distress_item_03 + $pre->distress_item_04 + $pre->distress_item_05;
                     $postScore = $post->distress_item_01 + $post->distress_item_02 + $post->distress_item_03 + $post->distress_item_04 + $post->distress_item_05;
 
@@ -128,7 +170,6 @@ Route::middleware('auth')->group(function () {
             return count($arr) > 0 ? round(array_sum($arr) / count($arr), 2) : 0;
         };
 
-        // 4. FORMAT FOR CHART.JS
         $chartData = [
             'gender' => [
                 'labels' => ['Male', 'Female'],
@@ -187,32 +228,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/requests/{id}', [\App\Http\Controllers\UserController::class, 'showRequest']);
     });
 
-    // TEST SESSIONS & ASSIGNMENTS
-    Route::get('/test-sessions', [TestSessionController::class, 'index']);
-    Route::get('/test-sessions/create', [TestSessionController::class, 'create']);
-    Route::post('/test-sessions', [TestSessionController::class, 'store']);
-    Route::get('/test-sessions/{id}', [TestSessionController::class, 'show']);
-
-    // ASSESSMENTS & CONSENT
-    Route::get('/test-sessions/{id}/consent', [AssessmentController::class, 'showConsent']);
-    Route::get('/test-sessions/{id}/pre-test', [AssessmentController::class, 'createPreTest']);
-    Route::post('/test-sessions/{id}/pre-test', [AssessmentController::class, 'storePreTest']);
-    Route::get('/test-sessions/{id}/post-test', [AssessmentController::class, 'createPostTest']);
-    Route::post('/test-sessions/{id}/post-test', [AssessmentController::class, 'storePostTest']);
-
-    // LAUNCH PAD SCREEN
-    Route::get('/test-sessions/{id}/launch', [AssessmentController::class, 'launchTest']);
-
-    // INTERACTIVE TESTS
-    Route::get('/test-sessions/{id}/stroop', [StressTestController::class, 'stroop']);
-    Route::get('/test-sessions/{id}/mist', [StressTestController::class, 'mist']);
-    Route::get('/test-sessions/{id}/tsst', [StressTestController::class, 'tsst']);
-
-    // VIDEO RECORDING UPLOAD API (AUTO-SAVES RESULTS TOO)
-    Route::post('/test-sessions/{id}/recordings', [TestSessionController::class, 'storeRecordings']);
-
-    // FINAL RESULT SCREEN
-    Route::get('/test-sessions/{id}/result-summary', [AssessmentController::class, 'showResultSummary']);
+    // TEST SESSIONS & ASSIGNMENTS (Management Dashboard)
+    Route::get('/test-sessions', [TestSessionController::class, 'index'])->name('test-sessions.index');
+    Route::get('/test-sessions/create', [TestSessionController::class, 'create'])->name('test-sessions.create');
+    Route::post('/test-sessions', [TestSessionController::class, 'store'])->name('test-sessions.store');
+    Route::get('/test-sessions/{id}', [TestSessionController::class, 'show'])->name('test-sessions.show');
+    Route::post('/test-sessions/{id}/send-email', [TestSessionController::class, 'sendAccessCodeEmail'])->name('test-sessions.send-email');
 
     // PROFILE
     Route::get('/profile', [ProfileController::class, 'edit']);
