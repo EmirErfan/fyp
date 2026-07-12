@@ -84,12 +84,14 @@
             position: relative;
             height: 100vh;
             min-height: 650px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            padding: 6rem 4rem 2rem;
+            justify-content: center;
+            padding: 6rem 2rem 2rem;
             overflow: hidden;
             background: var(--white);
+            text-align: center;
         }
 
         .hero::before {
@@ -105,7 +107,9 @@
         .hero-left {
             position: relative; z-index: 1;
             display: flex; flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .hero h1 {
@@ -118,31 +122,17 @@
         .hero h1 em { font-style: italic; color: var(--pink-dark); }
 
         .hero-sub {
-            font-size: 1rem; line-height: 1.7; color: var(--ink-3);
-            max-width: 400px; margin-bottom: 2rem;
+            font-size: 1.1rem; line-height: 1.7; color: var(--ink-3);
+            max-width: 550px; margin-bottom: 2rem;
         }
 
         .hero-ctas {
-            display: block; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
             margin-bottom: 2.5rem;
             margin-top: 1rem;
-        }
-        
-        .hero-right {
-            position: relative; z-index: 1;
-            display: flex; align-items: center; justify-content: center;
-            height: 100%;
-        }
-        .hero-image {
-            width: 100%;
-            max-width: 500px;
-            height: auto;
-            animation: floatImage 6s ease-in-out infinite;
-            filter: drop-shadow(0 20px 30px rgba(155, 28, 74, 0.08));
-        }
-        @keyframes floatImage {
-            0%, 100% { transform: translateY(0); }
-            50%      { transform: translateY(-15px); }
         }
 
         section { padding: 6rem 2rem; }
@@ -262,8 +252,7 @@
 
         /* ── RESPONSIVE ── */
         @media(max-width:960px) {
-            .hero { grid-template-columns: 1fr; height: auto; min-height: auto; padding: 7rem 2rem 4rem; }
-            .hero-right { height: 340px; margin-top: 2rem; }
+            .hero { height: auto; min-height: auto; padding: 7rem 2rem 4rem; }
             .methods-top     { grid-template-columns:1fr; gap:1.5rem; }
             .methods-grid    { grid-template-columns:1fr; }
             .nav-center      { display:none; }
@@ -283,10 +272,7 @@
         StressLab<span class="nav-logo-dot">·</span>
     </a>
 
-    <div class="nav-center">
-        <a href="#about"    class="nav-link">Methods</a>
-        <a href="#contact"  class="nav-link">Access</a>
-    </div>
+
 
     <div class="nav-right">
         <a href="/login" class="btn-nav-cta">
@@ -311,7 +297,7 @@
                 </div>
             @endif
 
-            <form action="/join" method="POST" style="display: flex; gap: 0.5rem; max-width: 420px; width: 100%;">
+            <form action="/join" method="POST" style="display: flex; gap: 0.5rem; max-width: 420px; width: 100%; margin: 0 auto;">
                 @csrf
                 <input 
                     type="text" 
@@ -320,7 +306,7 @@
                     required 
                     maxlength="6" 
                     autocomplete="off"
-                    style="flex: 1; padding: 0.85rem 1.5rem; font-size: 1.1rem; font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; color: var(--ink); background: var(--white); border: 2px solid var(--border); border-radius: 50px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+                    style="flex: 1; padding: 0.85rem 1.5rem; font-size: 1.1rem; font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; color: var(--ink); background: var(--white); border: 2px solid var(--border); border-radius: 50px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; text-align: center;"
                     onfocus="this.style.borderColor='var(--pink-dark)'; this.style.boxShadow='0 0 0 3px var(--shadow-pink)';"
                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';"
                 >
@@ -335,52 +321,15 @@
                 </button>
             </form>
 
-            <p style="font-size: 0.85rem; color: var(--ink-3); margin-top: 1rem; margin-left: 0.5rem;">
-                Are you a researcher? <a href="/login" style="color: var(--pink-dark); font-weight: 600; text-decoration: none;">Log in here</a>.
+            <p style="font-size: 0.85rem; color: var(--ink-3); margin-top: 1rem; text-align: center;">
+                Are you a researcher? <a href="#contact" style="color: var(--pink-dark); font-weight: 600; text-decoration: none;">Request Access Here</a>.
             </p>
         </div>
     </div>
-    
-    <div class="hero-right">
-        <img src="{{ asset('images/hero-image.png') }}" alt="StressLab Illustration" class="hero-image">
-    </div>
 
 </section>
 
-<section id="about">
-    <div class="section-inner">
-        <div class="methods-top">
-            <div class="reveal">
-                <span class="eyebrow">Induction Methods</span>
-                <h2 class="sec-title">Three validated approaches to stress induction</h2>
-            </div>
-            <p class="sec-desc reveal d1">Each protocol follows established psychological research standards with automated scoring, reaction time logging, and adaptive difficulty calibration.</p>
-        </div>
-        <div class="methods-grid">
-            <div class="method-card reveal">
-                <div class="mc-num">01</div>
-                <div class="mc-icon">🎨</div>
-                <h3 class="mc-title">Stroop Test</h3>
-                <p class="mc-desc">Measure cognitive interference and selective attention with automated reaction time tracking and accuracy scoring across congruent and incongruent trials.</p>
-                <span class="mc-tag">Cognitive Interference</span>
-            </div>
-            <div class="method-card reveal d1">
-                <div class="mc-num">02</div>
-                <div class="mc-icon">🧮</div>
-                <h3 class="mc-title">MIST</h3>
-                <p class="mc-desc">Induce stress through time-pressured arithmetic tasks with real-time feedback, dynamic difficulty adjustment, and performance comparison feedback.</p>
-                <span class="mc-tag">Arithmetic Stress</span>
-            </div>
-            <div class="method-card reveal d2">
-                <div class="mc-num">03</div>
-                <div class="mc-icon">🎤</div>
-                <h3 class="mc-title">TSST Arithmetic</h3>
-                <p class="mc-desc">Standardized serial subtraction tasks designed to trigger acute psychological stress under evaluative observation and time constraint conditions.</p>
-                <span class="mc-tag">Social Evaluation</span>
-            </div>
-        </div>
-    </div>
-</section>
+
 
 <section class="contact-section" id="contact">
     <div class="contact-inner">
@@ -412,7 +361,12 @@
                 
                 <div class="form-group">
                     <label for="email">Institution / University Email</label>
-                    <input type="email" id="email" name="email" placeholder="ali@uitm.edu.my" required>
+                    <input type="email" id="email" name="email" placeholder="ali@uitm.edu.my" required value="{{ old('email') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="head_researcher_email">Head Researcher Email</label>
+                    <input type="email" id="head_researcher_email" name="head_researcher_email" placeholder="head@uitm.edu.my" required value="{{ old('head_researcher_email') }}">
                 </div>
 
                 <div class="form-group">
@@ -441,8 +395,6 @@
         <span class="footer-logo"><i class="fas fa-brain" style="color: var(--pink-dark);"></i> StressLab</span>
         <span class="footer-copy">&copy; {{ date('Y') }} Centralized Stress Induction System. All Rights Reserved.</span>
         <ul class="footer-links">
-            <li><a href="#about">Methods</a></li>
-            <li><a href="#contact">Access</a></li>
             <li><a href="/login">Login</a></li>
         </ul>
     </div>

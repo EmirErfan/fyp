@@ -321,23 +321,35 @@
                 <a href="/participants/create" class="qa-btn">
                     <div class="qa-icon"><i class="fas fa-user-plus" style="color:var(--pink);"></i></div>
                     Add New Participant
+                    <span class="info-btn" style="margin-left: auto;" data-tooltip="Enroll a new participant into the system"><i class="fas fa-info"></i></span>
                 </a>
                 <a href="/test-sessions/create" class="qa-btn">
                     <div class="qa-icon"><i class="fas fa-vial" style="color:#2563eb;"></i></div>
                     Create Test Session
+                    <span class="info-btn" style="margin-left: auto;" data-tooltip="Start a new stress test session"><i class="fas fa-info"></i></span>
                 </a>
                 <a href="/schedules/create" class="qa-btn">
                     <div class="qa-icon"><i class="fas fa-calendar-alt" style="color:#7c3aed;"></i></div>
                     Schedule Session
+                    <span class="info-btn" style="margin-left: auto;" data-tooltip="Plan a future test session"><i class="fas fa-info"></i></span>
                 </a>
                 <a href="/participants" class="qa-btn">
                     <div class="qa-icon"><i class="fas fa-users" style="color:#15803d;"></i></div>
                     View Participants
+                    <span class="info-btn" style="margin-left: auto;" data-tooltip="Browse all enrolled participants"><i class="fas fa-info"></i></span>
                 </a>
                 <a href="/export" class="qa-btn">
                     <div class="qa-icon"><i class="fas fa-file-export" style="color:var(--gray-5);"></i></div>
                     Export Data
+                    <span class="info-btn" style="margin-left: auto;" data-tooltip="Download session results as CSV/Excel"><i class="fas fa-info"></i></span>
                 </a>
+                @if(auth()->check() && auth()->user()->role === 'admin')
+                <a href="/team-management" class="qa-btn">
+                    <div class="qa-icon"><i class="fas fa-users-cog" style="color:#f59e0b;"></i></div>
+                    Manage Team
+                    <span class="info-btn" style="margin-left: auto;" data-tooltip="Administer team members and access"><i class="fas fa-info"></i></span>
+                </a>
+                @endif
             </div>
         </div>
 

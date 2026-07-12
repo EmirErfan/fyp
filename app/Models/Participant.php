@@ -11,7 +11,7 @@ class Participant extends Model
     protected $fillable = [
         'name', 'dob', 'gender', 'email', 'phone', 
         'date_joined', 'occupation', 'education_level', 
-        'color_blindness', 'existing_condition', 'user_id'
+        'color_blindness', 'existing_condition', 'user_id', 'team_id'
     ];
 
     // Define relationship to the Researcher (User)
@@ -24,5 +24,10 @@ class Participant extends Model
     public function getAgeAttribute()
     {
         return Carbon::parse($this->attributes['dob'])->age;
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }

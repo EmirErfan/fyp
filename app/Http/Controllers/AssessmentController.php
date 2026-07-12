@@ -29,6 +29,26 @@ class AssessmentController extends Controller
         return view('assessments.consent', compact('session'));
     }
 
+    // Shows the Step-by-Step Tutorial
+    public function showTutorial($id)
+    {
+        $this->authorizeSessionAccess($id);
+
+        $session = \App\Models\TestSession::with('test')->findOrFail($id);
+        
+        return view('assessments.tutorial', compact('session'));
+    }
+
+    // Shows the Camera Face Detection Check
+    public function showCameraCheck($id)
+    {
+        $this->authorizeSessionAccess($id);
+
+        $session = \App\Models\TestSession::with('participant')->findOrFail($id);
+        
+        return view('assessments.camera_check', compact('session'));
+    }
+
     // Shows the Pre-Test Form
     public function createPreTest($id)
     {

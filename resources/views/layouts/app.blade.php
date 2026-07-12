@@ -284,6 +284,76 @@
             to { transform: translateX(120%); opacity: 0; }
         }
 
+        /* ── TOOLTIPS ── */
+        .info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--gray-2);
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+            margin-left: 0.4rem;
+            cursor: help;
+            position: relative;
+            transition: all 0.2s;
+            text-decoration: none;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        .info-btn:hover {
+            background: var(--pink-lt);
+            color: var(--pink);
+        }
+        [data-tooltip] {
+            position: relative;
+        }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: #1a1a28;
+            color: #fff;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            pointer-events: none;
+        }
+        [data-tooltip]::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1a1a28 transparent transparent transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        [data-tooltip]:hover::after,
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+        [data-tooltip]:hover::after {
+            transform: translateX(-50%) translateY(0);
+        }
+
         /* ── MAIN ── */
         .main-content {
             margin-top: var(--navbar-h);
@@ -333,6 +403,9 @@
             <a href="/users" class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
                 <i class="fas fa-user-shield"></i> Users
             </a>
+            <a href="/team-management" class="nav-link {{ Request::is('team-management*') ? 'active' : '' }}">
+                <i class="fas fa-users-cog"></i> Team
+            </a>
             @endif
         </div>
 
@@ -378,6 +451,7 @@
         @if(auth()->check() && auth()->user()->role === 'admin')
         <div class="mobile-sep"></div>
         <a href="/users" class="nav-link {{ Request::is('users*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-user-shield"></i> User Management</a>
+        <a href="/team-management" class="nav-link {{ Request::is('team-management*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-users-cog"></i> Team Management</a>
         @endif
         <div class="mobile-sep"></div>
         <a href="/profile" class="nav-link" onclick="closeMobileNav()"><i class="fas fa-user-edit"></i> Edit Profile</a>

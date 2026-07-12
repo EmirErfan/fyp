@@ -19,10 +19,13 @@ class ParticipantController extends Controller
 
         $query = \App\Models\Participant::with('researcher');
 
-        if (auth()->user()->role === 'researcher') {
+        if (auth()->user()->role === 'admin') {
+            $query->where('team_id', auth()->user()->team_id);
+            if ($researcherId) {
+                $query->where('user_id', $researcherId);
+            }
+        } elseif (auth()->user()->role === 'researcher') {
             $query->where('user_id', auth()->id());
-        } elseif ($researcherId) {
-            $query->where('user_id', $researcherId);
         }
 
         $participants = $query->when($search, function ($q) use ($search, $searchId) {
@@ -39,7 +42,7 @@ class ParticipantController extends Controller
 
     public function create()
     {
-        $researchers = auth()->user()->role === 'admin' ? \App\Models\User::all() : collect();
+        $researchers = auth()->user()->role === 'admin' ? \App\Models\User::where('team_id', auth()->user()->team_id)->get() : collect();
         return view('participants.create', compact('researchers'));
     }
 
@@ -71,6 +74,7 @@ class ParticipantController extends Controller
             'gender' => $request->gender,
             'date_joined' => now()->toDateString(),
             'user_id' => auth()->user()->role === 'admin' ? ($request->user_id ?? $request->researcher_id) : auth()->id(),
+            'team_id' => auth()->user()->team_id,
             'email' => $request->email,
             'phone' => $request->phone,
             'occupation' => $request->occupation,
@@ -86,11 +90,14 @@ class ParticipantController extends Controller
     {
         $participant = Participant::findOrFail($id);
         
+        if (auth()->user()->role === 'admin' && $participant->team_id !== auth()->user()->team_id) {
+            abort(403);
+        }
         if (auth()->user()->role === 'researcher' && $participant->user_id !== auth()->id()) {
             abort(403);
         }
 
-        $researchers = auth()->user()->role === 'admin' ? \App\Models\User::all() : collect();
+        $researchers = auth()->user()->role === 'admin' ? \App\Models\User::where('team_id', auth()->user()->team_id)->get() : collect();
         return view('participants.edit', compact('participant', 'researchers'));
     }
 
@@ -118,6 +125,9 @@ class ParticipantController extends Controller
 
         $participant = Participant::findOrFail($id);
 
+        if (auth()->user()->role === 'admin' && $participant->team_id !== auth()->user()->team_id) {
+            abort(403);
+        }
         if (auth()->user()->role === 'researcher' && $participant->user_id !== auth()->id()) {
             abort(403);
         }
@@ -127,6 +137,7 @@ class ParticipantController extends Controller
             'dob' => $request->dob, 
             'gender' => $request->gender,
             'user_id' => auth()->user()->role === 'admin' ? ($request->user_id ?? $request->researcher_id ?? $participant->user_id) : $participant->user_id,
+            'team_id' => auth()->user()->role === 'admin' ? auth()->user()->team_id : $participant->team_id,
             'email' => $request->email,
             'phone' => $request->phone,
             'occupation' => $request->occupation,
@@ -142,6 +153,9 @@ class ParticipantController extends Controller
     {
         $participant = Participant::findOrFail($id);
 
+        if (auth()->user()->role === 'admin' && $participant->team_id !== auth()->user()->team_id) {
+            abort(403);
+        }
         if (auth()->user()->role === 'researcher' && $participant->user_id !== auth()->id()) {
             abort(403);
         }
@@ -154,7 +168,9 @@ class ParticipantController extends Controller
     {
         $participant = \App\Models\Participant::findOrFail($id);
         
-      
+        if (auth()->user()->role === 'admin' && $participant->team_id !== auth()->user()->team_id) {
+            abort(403);
+        }
         if (auth()->user()->role === 'researcher' && $participant->user_id !== auth()->id()) {
             abort(403);
         }

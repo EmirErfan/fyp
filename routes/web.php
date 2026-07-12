@@ -69,6 +69,8 @@ Route::post('/join', function (\Illuminate\Http\Request $request) {
 
 // ASSESSMENTS & CONSENT (Publicly accessible via PIN authorization)
 Route::get('/test-sessions/{id}/consent', [AssessmentController::class, 'showConsent']);
+Route::get('/test-sessions/{id}/tutorial', [AssessmentController::class, 'showTutorial']);
+Route::get('/test-sessions/{id}/camera-check', [AssessmentController::class, 'showCameraCheck']);
 Route::get('/test-sessions/{id}/pre-test', [AssessmentController::class, 'createPreTest']);
 Route::post('/test-sessions/{id}/pre-test', [AssessmentController::class, 'storePreTest']);
 Route::get('/test-sessions/{id}/post-test', [AssessmentController::class, 'createPostTest']);
@@ -103,10 +105,11 @@ Route::middleware('auth')->group(function () {
         $user = auth()->user();
 
         if ($user->role === 'admin') {
-            $totalParticipants = \App\Models\Participant::count();
-            $totalSessions = \App\Models\TestSession::count();
-            $participants = \App\Models\Participant::all()->keyBy('id');
-            $sessions = \App\Models\TestSession::all()->keyBy('id');
+            $participants = \App\Models\Participant::where('team_id', $user->team_id)->get()->keyBy('id');
+            $totalParticipants = $participants->count();
+            $participantIds = $participants->pluck('id');
+            $sessions = \App\Models\TestSession::whereIn('participant_id', $participantIds)->get()->keyBy('id');
+            $totalSessions = $sessions->count();
         } else {
             $totalParticipants = \App\Models\Participant::where('user_id', $user->id)->count();
             $participants = \App\Models\Participant::where('user_id', $user->id)->get()->keyBy('id');
@@ -226,6 +229,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/requests', [UserController::class, 'accessRequests']);
         Route::post('/admin/requests/{id}/approve', [UserController::class, 'approveRequest']);
         Route::get('/admin/requests/{id}', [\App\Http\Controllers\UserController::class, 'showRequest']);
+
+        // TEAM MANAGEMENT
+        Route::get('/team-management', [\App\Http\Controllers\TeamManagementController::class, 'index'])->name('team.index');
+
+        Route::delete('/team-management/{id}', [\App\Http\Controllers\TeamManagementController::class, 'destroy'])->name('team.destroy');
     });
 
     // TEST SESSIONS & ASSIGNMENTS (Management Dashboard)

@@ -91,7 +91,7 @@
 
         <div class="action-row">
             <a href="{{ auth()->check() ? '/test-sessions' : '/' }}" class="btn-cancel">Cancel</a>
-            <a href="/test-sessions/{{ $session->id }}/pre-test" class="btn-proceed">I Understand & Continue</a>
+            <a href="/test-sessions/{{ $session->id }}/tutorial" class="btn-proceed">I Understand & Continue</a>
         </div>
     </div>
 </div>

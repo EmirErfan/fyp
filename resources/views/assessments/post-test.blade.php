@@ -74,7 +74,7 @@
     <div class="popup-overlay" id="instructionPopup">
         <div class="popup-box">
             <h2>Task Complete!</h2>
-            <p>Great job. Now, please complete this <strong>Post-Test</strong> questionnaire to finalize your session.</p>
+            <p>Great job. Now that you've finished the task, we want to see how your state of mind has changed. Please answer honestly based on how you feel <strong>right now</strong>.</p>
             <button class="popup-btn" onclick="closePopup()">Continue to Post-Test</button>
         </div>
     </div>
@@ -82,15 +82,11 @@
     <div class="assessment-container">
         
         <div class="page-header">
-            <h1>Post-Test Questionnaire</h1>
+            <h1>After the Task: How are you feeling?</h1>
             <h4>Participant: {{ $session->participant->name ?? 'Unknown Participant' }}</h4>
         </div>
 
-        <div style="text-align: center; margin-bottom: 40px;">
-            <p style="color: #666; font-size: 16px; font-style: italic;">
-                (Please rate on a scale of 1: totally disagree to 5: totally agree)
-            </p>
-        </div>
+        
 
         @if ($errors->any())
             <div class="error-alert">
@@ -101,12 +97,15 @@
         <form action="/test-sessions/{{ $session->id }}/post-test" method="POST">
             @csrf
 
-            <div class="section-title">Distress Items</div>
-
-            <div class="feeling-prompt">Right now, I am feeling...</div>
+            <div class="section-title">Part 1: Current Stress Levels</div>
+            
+            <div id="part1-questions">
 
             <div class="question-box">
-                <div class="question-text">1. ... stressed.</div>
+                <div class="question-text">
+                1. Right now, I feel stressed.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="distress_item_01" id="d1_1" value="1" required><label for="d1_1">1</label>
                     <input type="radio" name="distress_item_01" id="d1_2" value="2"><label for="d1_2">2</label>
@@ -117,7 +116,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">2. ... overwhelmed.</div>
+                <div class="question-text">
+                2. Right now, I feel overwhelmed.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="distress_item_02" id="d2_1" value="1" required><label for="d2_1">1</label>
                     <input type="radio" name="distress_item_02" id="d2_2" value="2"><label for="d2_2">2</label>
@@ -128,7 +130,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">3. ... exhausted.</div>
+                <div class="question-text">
+                3. Right now, I feel exhausted.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="distress_item_03" id="d3_1" value="1" required><label for="d3_1">1</label>
                     <input type="radio" name="distress_item_03" id="d3_2" value="2"><label for="d3_2">2</label>
@@ -139,7 +144,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">4. ... strained.</div>
+                <div class="question-text">
+                4. Right now, I feel strained.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="distress_item_04" id="d4_1" value="1" required><label for="d4_1">1</label>
                     <input type="radio" name="distress_item_04" id="d4_2" value="2"><label for="d4_2">2</label>
@@ -150,7 +158,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">5. ... mentally restless.</div>
+                <div class="question-text">
+                5. Right now, I feel mentally restless.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="distress_item_05" id="d5_1" value="1" required><label for="d5_1">1</label>
                     <input type="radio" name="distress_item_05" id="d5_2" value="2"><label for="d5_2">2</label>
@@ -160,12 +171,17 @@
                 </div>
             </div>
 
-            <div class="section-title">Eustress Items</div>
+            </div>
 
-            <div class="feeling-prompt">Right now, I am feeling...</div>
+            <div class="section-title">Part 2: Current Energy & Motivation</div>
+
+            <div id="part2-questions">
 
             <div class="question-box">
-                <div class="question-text">6. ... full of joy.</div>
+                <div class="question-text">
+                6. Right now, I feel full of joy.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="eustress_item_01" id="e1_1" value="1" required><label for="e1_1">1</label>
                     <input type="radio" name="eustress_item_01" id="e1_2" value="2"><label for="e1_2">2</label>
@@ -176,7 +192,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">7. ... challenged in a positive way.</div>
+                <div class="question-text">
+                7. Right now, I feel challenged in a positive way.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="eustress_item_02" id="e2_1" value="1" required><label for="e2_1">1</label>
                     <input type="radio" name="eustress_item_02" id="e2_2" value="2"><label for="e2_2">2</label>
@@ -187,7 +206,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">8. ... bursting with energy.</div>
+                <div class="question-text">
+                8. Right now, I feel bursting with energy.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="eustress_item_03" id="e3_1" value="1" required><label for="e3_1">1</label>
                     <input type="radio" name="eustress_item_03" id="e3_2" value="2"><label for="e3_2">2</label>
@@ -198,7 +220,10 @@
             </div>
 
             <div class="question-box">
-                <div class="question-text">9. ... enthusiastic.</div>
+                <div class="question-text">
+                9. Right now, I feel enthusiastic.
+                <div style="font-size: 13px; color: #666; font-weight: normal; margin-top: 5px;">(1: totally disagree to 5: totally agree)</div>
+            </div>
                 <div class="rating-options">
                     <input type="radio" name="eustress_item_04" id="e4_1" value="1" required><label for="e4_1">1</label>
                     <input type="radio" name="eustress_item_04" id="e4_2" value="2"><label for="e4_2">2</label>
@@ -206,6 +231,8 @@
                     <input type="radio" name="eustress_item_04" id="e4_4" value="4"><label for="e4_4">4</label>
                     <input type="radio" name="eustress_item_04" id="e4_5" value="5"><label for="e4_5">5</label>
                 </div>
+            </div>
+
             </div>
 
             <button type="submit" class="submit-btn">
@@ -227,6 +254,30 @@
         function closePopup() {
             document.getElementById('instructionPopup').classList.remove('active');
         }
+
+        // Randomize questions
+        document.addEventListener("DOMContentLoaded", function() {
+            function shuffleQuestions(containerId, startIdx) {
+                const container = document.getElementById(containerId);
+                if(!container) return;
+                const boxes = Array.from(container.querySelectorAll('.question-box'));
+                
+                for (let i = boxes.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [boxes[i], boxes[j]] = [boxes[j], boxes[i]];
+                }
+                
+                boxes.forEach((box, index) => {
+                    const textDiv = box.querySelector('.question-text');
+                    // Replace the number at the beginning of the text
+                    textDiv.innerHTML = textDiv.innerHTML.replace(/(^\s*)\d+\./, '$1' + (startIdx + index) + '.');
+                    container.appendChild(box);
+                });
+            }
+
+            shuffleQuestions('part1-questions', 1);
+            shuffleQuestions('part2-questions', 6);
+        });
     </script>
 
 </body>

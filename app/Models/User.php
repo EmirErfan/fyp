@@ -27,6 +27,7 @@ class User extends Authenticatable
         'university',
         'department',
         'bio',
+        'team_id',
     ];
 
     /**
@@ -60,5 +61,10 @@ class User extends Authenticatable
     public function testSchedules()
     {
         return $this->hasMany(TestSchedule::class, 'user_id');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }

@@ -36,12 +36,19 @@ class UserController extends Controller
             'role' => 'required|in:admin,researcher',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
+
+        if ($request->role === 'admin') {
+            $team = \App\Models\Team::create(['name' => $request->name . "'s Team"]);
+            $user->update(['team_id' => $team->id]);
+        } else {
+            $user->update(['team_id' => auth()->user()->team_id]);
+        }
 
         return redirect('/users')->with('success', 'User account created successfully.');
     }
@@ -58,7 +65,9 @@ class UserController extends Controller
     }
 
     public function accessRequests(){
-        $requests = AccessRequest::where('status', 'pending')->latest()->get();
+        $requests = AccessRequest::where('status', 'pending')
+                        ->where('head_researcher_email', auth()->user()->email)
+                        ->latest()->get();
         return view('admin.requests', compact('requests'));
     }
 
@@ -72,6 +81,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($password),
             'role' => 'researcher',
+            'team_id' => auth()->user()->team_id,
         ]);
 
         $request->update(['status' => 'approved']);
@@ -91,9 +101,10 @@ class UserController extends Controller
     {
         // Find the user or throw a 404 if they don't exist
         $editUser = User::findOrFail($id); 
+        $teams = \App\Models\Team::orderBy('name')->get();
 
         // Send the user data to a new view we are about to create
-        return view('users.edit', compact('editUser'));
+        return view('users.edit', compact('editUser', 'teams'));
     }
 
     public function update(Request $request, $id)
@@ -106,6 +117,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $editUser->id,
             'role' => 'required|in:admin,researcher',
+            'team_id' => 'nullable|exists:teams,id',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'university' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
@@ -128,6 +140,13 @@ class UserController extends Controller
         $editUser->name = $request->name;
         $editUser->email = $request->email;
         $editUser->role = $request->role; // Admin can change roles
+        
+        // Handle team change for researchers
+        if ($editUser->role === 'researcher' && $request->has('team_id') && $editUser->team_id != $request->team_id) {
+            \App\Models\Participant::where('user_id', $editUser->id)->update(['team_id' => $request->team_id]);
+            $editUser->team_id = $request->team_id;
+        }
+
         $editUser->university = $request->university;
         $editUser->department = $request->department;
         $editUser->bio = $request->bio;

@@ -20,5 +20,6 @@ class AccessRequest extends Model
         'institution',
         'purpose',
         'status',
+        'head_researcher_email',
     ];
 }

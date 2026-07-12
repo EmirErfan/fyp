@@ -31,6 +31,11 @@ class TestSessionController extends Controller
         $testSessions = TestSession::whereHas('testSchedule', function ($query) {
             $query->whereDate('date', '>=', now()->toDateString());
         })
+        ->when(auth()->user()->role === 'admin', function ($query) {
+            $query->whereHas('participant', function ($q) {
+                $q->where('team_id', auth()->user()->team_id);
+            });
+        })
         ->when(auth()->user()->role === 'researcher', function ($query) {
             $query->where('user_id', auth()->id());
         })
@@ -64,6 +69,9 @@ class TestSessionController extends Controller
         // Notice how many tables we are pulling from at once!
         $session = TestSession::with(['participant', 'testSchedule', 'test', 'result', 'assessments'])->findOrFail($id);
 
+        if (auth()->user()->role === 'admin' && $session->participant->team_id !== auth()->user()->team_id) {
+            abort(403);
+        }
         if (auth()->user()->role === 'researcher' && $session->user_id !== auth()->id()) {
             abort(403);
         }
@@ -81,7 +89,9 @@ class TestSessionController extends Controller
                                                   ->orderBy('date', 'asc');
         $participantsQuery = \App\Models\Participant::query();
 
-        if (auth()->user()->role === 'researcher') {
+        if (auth()->user()->role === 'admin') {
+            $participantsQuery->where('team_id', auth()->user()->team_id);
+        } elseif (auth()->user()->role === 'researcher') {
             $schedulesQuery->where('user_id', auth()->id());
             $participantsQuery->where('user_id', auth()->id());
         }
