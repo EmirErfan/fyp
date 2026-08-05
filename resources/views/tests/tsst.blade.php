@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>TSST - Stress Test</title>
+    <!-- Load tracking.js for continuous face monitoring -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         
@@ -41,6 +44,24 @@
     </style>
 </head>
 <body>
+
+    <!-- Hidden Live Face Feed Widget (required for tracking) -->
+    <div id="face-preview-container" style="position: fixed; top: -10000px; left: -10000px; opacity: 0; pointer-events: none;">
+        <video id="faceVid" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block;"></video>
+        <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.75); color: #22c55e; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
+            <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> LIVE FACE
+        </div>
+    </div>
+
+    <!-- Missing Face Warning Overlay -->
+    <div id="face-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center;">
+        <div style="background: #1e293b; border: 2px solid #ef4444; padding: 30px 40px; border-radius: 16px; max-width: 480px; box-shadow: 0 10px 30px rgba(239,68,68,0.4);">
+            <div style="font-size: 48px; color: #ef4444; margin-bottom: 15px;">⚠️</div>
+            <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #f87171;">Please keep you face on screen</h2>
+            <p style="font-size: 15px; color: #cbd5e1; margin-bottom: 20px;">Your face is no longer detected. Please position your face clearly in front of the camera.</p>
+            <div style="font-size: 24px; font-weight: 800; color: #ef4444; background: rgba(239,68,68,0.1); padding: 10px 20px; border-radius: 8px;" id="face-warning-timer">Test ending in 5s...</div>
+        </div>
+    </div>
 
     <div class="test-container" id="game-screen">
         <div class="header">
@@ -227,10 +248,7 @@
         // --- THE CSS TRICK ---
         const stealthMode = "position:fixed; top:-10000px; left:-10000px; width:1920px; height:1080px;";
 
-        const faceVid = document.createElement('video');
-        faceVid.muted = true; faceVid.autoplay = true; faceVid.playsInline = true;
-        faceVid.style.cssText = stealthMode;
-        document.body.appendChild(faceVid);
+        const faceVid = document.getElementById('faceVid');
         
         const screenVid = document.createElement('video');
         screenVid.muted = true; screenVid.autoplay = true; screenVid.playsInline = true;
@@ -243,6 +261,87 @@
         canvas.style.cssText = stealthMode;
         document.body.appendChild(canvas);
         const ctx = canvas.getContext('2d');
+
+        // --- CONTINUOUS FACE MONITORING LOGIC ---
+        let faceTracker = null;
+        let lastFaceDetectedTime = Date.now();
+        let faceWarningActive = false;
+        let faceWarningStartTime = 0;
+        let faceMonitorInterval = null;
+        let isFaceMonitoringStarted = false;
+
+        function startContinuousFaceMonitoring() {
+            if (isFaceMonitoringStarted) return;
+            isFaceMonitoringStarted = true;
+            lastFaceDetectedTime = Date.now();
+
+            if (typeof tracking !== 'undefined') {
+                try {
+                    faceTracker = new tracking.ObjectTracker('face');
+                    faceTracker.setInitialScale(4);
+                    faceTracker.setStepSize(2);
+                    faceTracker.setEdgesDensity(0.1);
+
+                    tracking.track('#faceVid', faceTracker);
+
+                    faceTracker.on('track', function(event) {
+                        if (event.data && event.data.length > 0) {
+                            lastFaceDetectedTime = Date.now();
+                            if (faceWarningActive) {
+                                dismissFaceWarning();
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error("Tracking JS Error:", e);
+                }
+            }
+
+            if (!faceMonitorInterval) {
+                faceMonitorInterval = setInterval(checkFacePresence, 250);
+            }
+        }
+
+        function checkFacePresence() {
+            if (!isPlaying) return;
+
+            const now = Date.now();
+            const elapsedSinceLastFace = (now - lastFaceDetectedTime) / 1000;
+
+            if (elapsedSinceLastFace >= 3) {
+                if (!faceWarningActive) {
+                    showFaceWarning();
+                } else {
+                    const warningElapsed = (now - faceWarningStartTime) / 1000;
+                    const remainingSecs = Math.max(0, Math.ceil(5 - warningElapsed));
+                    const timerEl = document.getElementById('face-warning-timer');
+                    if (timerEl) {
+                        timerEl.innerText = `Test ending in ${remainingSecs}s...`;
+                    }
+
+                    if (warningElapsed >= 5) {
+                        clearInterval(faceMonitorInterval);
+                        dismissFaceWarning();
+                        endTest();
+                    }
+                }
+            }
+        }
+
+        function showFaceWarning() {
+            faceWarningActive = true;
+            faceWarningStartTime = Date.now();
+            const timerEl = document.getElementById('face-warning-timer');
+            if (timerEl) timerEl.innerText = "Test ending in 5s...";
+            const overlay = document.getElementById('face-warning-overlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+
+        function dismissFaceWarning() {
+            faceWarningActive = false;
+            const overlay = document.getElementById('face-warning-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
 
         // The Harsh Idle Timer Function
         function resetIdleTimer() {
@@ -271,6 +370,8 @@
 
                 await faceVid.play().catch(e => console.log(e));
                 await screenVid.play().catch(e => console.log(e));
+
+                startContinuousFaceMonitoring();
 
                 // Wait half a second for streams to stabilize
                 setTimeout(() => {
@@ -422,6 +523,12 @@
 
         function endTest() {
             isPlaying = false;
+            if (typeof faceMonitorInterval !== 'undefined' && faceMonitorInterval) {
+                clearInterval(faceMonitorInterval);
+            }
+            if (typeof dismissFaceWarning === 'function') {
+                dismissFaceWarning();
+            }
             clearInterval(idleTimer); 
             cancelAnimationFrame(animationId);
             

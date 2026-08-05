@@ -35,7 +35,8 @@ class ParticipantController extends Controller
             });
         })
         ->orderBy('name', 'asc')
-        ->get();
+        ->paginate(5)
+        ->withQueryString();
 
         return view('participants.index', compact('participants', 'researcherId'));
     }

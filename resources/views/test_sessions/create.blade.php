@@ -3,6 +3,7 @@
 @section('title', 'New Test Session — StressLab')
 
 @section('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
 <style>
     /* ── PAGE HEADER ── */
     .page-header {
@@ -256,6 +257,38 @@
     }
     .info-tip i { color: var(--pink); margin-top: 1px; flex-shrink: 0; font-size: 0.8rem; }
 
+    /* Test Protocol Cards */
+    .test-protocol-cards { display: flex; flex-direction: column; gap: 0.75rem; }
+    .test-card { cursor: pointer; display: block; margin: 0; }
+    .test-card input { display: none; }
+    .test-card-inner {
+        display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem;
+        border: 2px solid var(--gray-2); border-radius: 12px;
+        background: var(--white); transition: all 0.2s ease;
+    }
+    .test-icon {
+        width: 42px; height: 42px; border-radius: 10px;
+        background: var(--gray-1); color: var(--text-muted);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; transition: all 0.2s ease;
+    }
+    .test-info { display: flex; flex-direction: column; }
+    .test-info strong { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.15rem; }
+    .test-info span { font-size: 0.8rem; color: var(--text-muted); }
+
+    .test-card input:checked + .test-card-inner { border-color: var(--pink); background: var(--pink-lt); box-shadow: 0 4px 12px rgba(200,24,74,0.1); }
+    .test-card input:checked + .test-card-inner .test-icon { background: var(--pink); color: white; }
+
+    /* TomSelect Overrides */
+    .ts-wrapper.form-select { padding: 0; border: none; background: none; }
+    .ts-control {
+        padding: 0.7rem 1rem !important; border: 1px solid var(--gray-2) !important;
+        border-radius: 9px !important; font-size: 0.85rem !important;
+        font-family: var(--sans) !important; color: var(--text-primary) !important;
+        background: var(--white) !important; box-shadow: none !important;
+    }
+    .ts-wrapper.focus .ts-control { border-color: var(--pink) !important; box-shadow: 0 0 0 3px rgba(200,24,74,0.1) !important; }
+
     @media (max-width: 860px) {
         .create-layout { grid-template-columns: 1fr; }
         .info-card { position: static; }
@@ -295,15 +328,24 @@
                             Schedule Slot
                             <span class="required-dot"></span>
                         </label>
-                        <select name="test_schedule_id" id="test_schedule_id" class="form-select" required>
-                            <option value="" disabled selected>— Choose a date &amp; time slot —</option>
-                            @foreach($schedules as $schedule)
-                                <option value="{{ $schedule->id }}">
-                                    {{ \Carbon\Carbon::parse($schedule->date)->format('d M Y') }} at {{ \Carbon\Carbon::parse($schedule->time)->format('h:i A') }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="field-hint"><i class="fas fa-circle-info"></i> Only available upcoming slots are shown.</div>
+                        @if($schedules->isEmpty())
+                            <div style="background: var(--pink-lt); border: 1px dashed var(--pink-soft); border-radius: 9px; padding: 1.5rem; text-align: center;">
+                                <p style="font-size: 0.85rem; color: var(--pink-deep); margin-bottom: 0.8rem; font-weight: 500;">No upcoming schedule slots available.</p>
+                                <a href="/schedules/create" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.2rem; background: var(--pink); color: white; text-decoration: none; border-radius: 8px; font-size: 0.8rem; font-weight: 700; transition: background 0.15s;">
+                                    <i class="fas fa-plus"></i> Create Schedule
+                                </a>
+                            </div>
+                        @else
+                            <select name="test_schedule_id" id="test_schedule_id" class="form-select" required>
+                                <option value="" disabled selected>— Choose a date &amp; time slot —</option>
+                                @foreach($schedules as $schedule)
+                                    <option value="{{ $schedule->id }}">
+                                        {{ \Carbon\Carbon::parse($schedule->date)->format('d M Y') }} at {{ \Carbon\Carbon::parse($schedule->time)->format('h:i A') }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="field-hint"><i class="fas fa-circle-info"></i> Only available upcoming slots are shown.</div>
+                        @endif
                     </div>
 
                     <div class="form-divider"></div>
@@ -328,18 +370,40 @@
                     <div class="form-divider"></div>
 
                     <div class="form-group">
-                        <label class="form-label" for="test_id">
+                        <label class="form-label">
                             <i class="fas fa-clipboard-list"></i>
                             Test Protocol
                             <span class="required-dot"></span>
                         </label>
-                        <select name="test_id" id="test_id" class="form-select" required>
-                            <option value="" disabled selected>— Choose a test protocol —</option>
+                        <div class="test-protocol-cards">
                             @foreach($tests as $test)
-                                <option value="{{ $test->id }}">{{ $test->test_type }}</option>
+                                <label class="test-card">
+                                    <input type="radio" name="test_id" value="{{ $test->id }}" required>
+                                    <div class="test-card-inner">
+                                        <div class="test-icon">
+                                            @if($test->test_type === 'TSST')
+                                                <i class="fas fa-users"></i>
+                                            @elseif($test->test_type === 'Stroop')
+                                                <i class="fas fa-brain"></i>
+                                            @elseif($test->test_type === 'MIST')
+                                                <i class="fas fa-calculator"></i>
+                                            @else
+                                                <i class="fas fa-vial"></i>
+                                            @endif
+                                        </div>
+                                        <div class="test-info">
+                                            <strong>{{ $test->test_type }}</strong>
+                                            <span>
+                                                @if($test->test_type === 'TSST') Trier Social Stress Test
+                                                @elseif($test->test_type === 'Stroop') Stroop Color &amp; Word Test
+                                                @elseif($test->test_type === 'MIST') Montreal Imaging Stress Task
+                                                @else Standard test protocol @endif
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>
                             @endforeach
-                        </select>
-                        <div class="field-hint"><i class="fas fa-circle-info"></i> TSST, Cold Pressor, or Stroop Task.</div>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn-submit">
@@ -387,5 +451,15 @@
         </div>
 
     </div>
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new TomSelect('#participant_id', {
+                create: false,
+                sortField: { field: "text", direction: "asc" },
+                placeholder: "— Type to search participant —"
+            });
+        });
+    </script>
 @endsection

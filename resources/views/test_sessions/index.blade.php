@@ -339,9 +339,14 @@
             <option value="in-progress" {{ request('status') == 'in-progress' ? 'selected' : '' }}>In Progress</option>
         </select>
 
+        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.83rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; margin-left: 0.5rem; user-select: none;">
+            <input type="checkbox" name="include_past" value="1" {{ request('include_past') ? 'checked' : '' }} onchange="this.form.submit()" style="accent-color: var(--pink); width: 16px; height: 16px; cursor: pointer;">
+            Show Past Sessions
+        </label>
+
         <button type="submit" class="filter-btn"><i class="fas fa-search"></i> Search</button>
 
-        @if(request('search') || request('status'))
+        @if(request('search') || request('status') || request('include_past'))
             <a href="/test-sessions" class="clear-btn"><i class="fas fa-times"></i> Clear</a>
         @endif
     </form>
@@ -435,6 +440,10 @@
                 </table>
             </div>
         @endif
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+        {{ $testSessions->links('vendor.pagination.custom') }}
     </div>
 
 @endsection

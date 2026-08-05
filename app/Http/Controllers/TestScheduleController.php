@@ -32,7 +32,8 @@ class TestScheduleController extends Controller
             });
         })
         ->orderBy('date', 'desc')
-        ->get();
+        ->paginate(4)
+        ->withQueryString();
 
         return view('schedules.index', compact('schedules'));
     }
@@ -78,5 +79,18 @@ class TestScheduleController extends Controller
         }
 
         return view('schedules.show', compact('schedule'));
+    }
+
+    public function destroy($id)
+    {
+        $schedule = \App\Models\TestSchedule::findOrFail($id);
+        
+        if (auth()->user()->role === 'researcher' && $schedule->user_id !== auth()->id()) {
+            abort(403);
+        }
+        
+        $schedule->delete();
+        
+        return redirect('/schedules')->with('success', 'Schedule deleted successfully!');
     }
 }

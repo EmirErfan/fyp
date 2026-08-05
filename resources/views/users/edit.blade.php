@@ -42,13 +42,7 @@
             </div>
         </div>
 
-        <div style="margin-bottom: 1.5rem; background: #f8fafc; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;">System Role Level</label>
-            <select name="role" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: white;">
-                <option value="researcher" {{ $editUser->role === 'researcher' ? 'selected' : '' }}>Researcher (Standard Access)</option>
-                <option value="admin" {{ $editUser->role === 'admin' ? 'selected' : '' }}>Administrator (Full Access)</option>
-            </select>
-        </div>
+
 
         @if($editUser->role === 'researcher')
         <div style="margin-bottom: 1.5rem; background: #fdf0f3; padding: 1.5rem; border-radius: 8px; border: 1px solid #fce7f3;">

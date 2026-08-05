@@ -299,7 +299,8 @@
                             </label>
                             <input type="date" id="date" name="date"
                                    class="form-input"
-                                   min="{{ date('Y-m-d') }}" required>
+                                   min="{{ date('Y-m-d') }}"
+                                   value="{{ request('date') }}" required>
                             <div class="field-hint"><i class="fas fa-circle-info"></i> Today or future dates only.</div>
                         </div>
 

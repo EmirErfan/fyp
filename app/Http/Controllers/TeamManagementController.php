@@ -28,6 +28,8 @@ class TeamManagementController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ResearcherRemovedMail($user->name));
+
         $user->delete();
 
         return redirect()->back()->with('success', 'Researcher removed successfully.');

@@ -225,6 +225,115 @@
     }
     .empty-state h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; }
     .empty-state p { font-size: 0.82rem; }
+
+    /* ── LAYOUT GRID ── */
+    .layout-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 992px) {
+        .layout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 7px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: var(--gray-1);
+        color: var(--text-muted);
+        border: 1px solid var(--gray-2);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .btn-delete:hover {
+        background: #fee2e2;
+        color: #ef4444;
+        border-color: #f87171;
+    }
+
+    /* ── CALENDAR ── */
+    .calendar-card {
+        background: var(--white);
+        border: 1px solid var(--gray-2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .fc {
+        font-family: var(--sans);
+    }
+    .fc-theme-standard .fc-scrollgrid {
+        border-color: var(--gray-2);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: var(--gray-2);
+    }
+    .fc .fc-col-header-cell-cushion {
+        padding: 12px 8px;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .fc-daygrid-day-number {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        padding: 8px !important;
+        text-decoration: none;
+    }
+    .fc-daygrid-day {
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .fc-daygrid-day:hover {
+        background: #fdf8f9;
+    }
+    .fc-event {
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 3px 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: none;
+    }
+    .fc-event-title { font-weight: 700; }
+    .fc .fc-button-primary {
+        background: var(--white);
+        border: 1px solid var(--gray-2);
+        color: var(--text-primary);
+        font-weight: 600;
+        text-transform: capitalize;
+        box-shadow: none !important;
+    }
+    .fc .fc-button-primary:hover {
+        background: var(--gray-1);
+        color: var(--pink);
+    }
+    .fc .fc-button-primary:not(:disabled).fc-button-active, 
+    .fc .fc-button-primary:not(:disabled):active {
+        background: var(--pink-lt);
+        color: var(--pink);
+        border-color: var(--pink-soft);
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
 </style>
 @endsection
 
@@ -238,15 +347,23 @@
         <a href="/schedules/create" class="btn-new"><i class="fas fa-plus"></i> New Schedule</a>
     </div>
 
-    <form action="/schedules" method="GET" class="filter-bar">
-        <input type="text" name="search" class="filter-input"
-               placeholder="Search by Schedule ID, date (YYYY-MM-DD), or time…"
-               value="{{ request('search') }}">
-        <button type="submit" class="filter-btn"><i class="fas fa-search"></i> Search</button>
-        @if(request('search'))
-            <a href="/schedules" class="clear-btn"><i class="fas fa-times"></i> Clear</a>
-        @endif
-    </form>
+    <div class="layout-grid">
+        <!-- Left Column: Calendar -->
+        <div class="calendar-card">
+            <div id="calendar"></div>
+        </div>
+
+        <!-- Right Column: List and Filter -->
+        <div class="list-section">
+            <form action="/schedules" method="GET" class="filter-bar">
+                <input type="text" name="search" class="filter-input"
+                       placeholder="Search by ID, date, or time…"
+                       value="{{ request('search') }}">
+                <button type="submit" class="filter-btn"><i class="fas fa-search"></i> Search</button>
+                @if(request('search'))
+                    <a href="/schedules" class="clear-btn"><i class="fas fa-times"></i></a>
+                @endif
+            </form>
 
     <div class="table-card">
         <div class="table-card-header">
@@ -278,9 +395,18 @@
                             <td><span class="sched-date">{{ \Carbon\Carbon::parse($schedule->date)->format('l, d F Y') }}</span></td>
                             <td><span class="sched-time">{{ \Carbon\Carbon::parse($schedule->time)->format('h:i A') }}</span></td>
                             <td>
-                                <a href="/schedules/{{ $schedule->id }}" class="btn-action">
-                                    <i class="fas fa-eye"></i> View Details
-                                </a>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <a href="/schedules/{{ $schedule->id }}" class="btn-action">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                    <form action="/schedules/{{ $schedule->id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this schedule?');" style="margin:0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-delete" title="Delete Schedule">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -289,5 +415,50 @@
             </div>
         @endif
     </div>
+    
+    @if($schedules->hasPages())
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+            {{ $schedules->links('vendor.pagination.custom') }}
+        </div>
+    @endif
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                height: 420,
+                events: [
+                    @foreach($schedules as $schedule)
+                    {
+                        title: '#S-{{ str_pad($schedule->id, 3, '0', STR_PAD_LEFT) }}',
+                        start: '{{ $schedule->date }}T{{ $schedule->time }}',
+                        url: '/schedules/{{ $schedule->id }}',
+                        backgroundColor: '#d53f8c', /* var(--pink) */
+                        borderColor: '#d53f8c',
+                        textColor: '#fff'
+                    },
+                    @endforeach
+                ],
+                eventClick: function(info) {
+                    if (info.event.url) {
+                        window.location.href = info.event.url;
+                        info.jsEvent.preventDefault();
+                    }
+                },
+                dateClick: function(info) {
+                    window.location.href = '/schedules/create?date=' + info.dateStr;
+                }
+            });
+            calendar.render();
+        });
+    </script>
 @endsection

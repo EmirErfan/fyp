@@ -40,45 +40,24 @@
             overflow-x: hidden;
         }
 
-        nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-            height: 64px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 2.5rem;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+        .top-right-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            transition: background 0.2s;
         }
-        .nav-logo {
-            display: flex; align-items: center; gap: 0.5rem;
-            text-decoration: none; color: var(--ink);
-            font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em;
-            font-family: var(--sans);
-        }
-        .nav-logo-dot { color: var(--pink-bright); }
-        .nav-center {
-            display: flex; align-items: center; gap: 0.15rem;
-            position: absolute; left: 50%; transform: translateX(-50%);
-        }
-        .nav-link {
-            display: inline-flex; align-items: center; gap: 0.3rem;
-            color: var(--ink-3); text-decoration: none;
-            font-size: 0.875rem; font-weight: 400;
-            padding: 0.4rem 0.85rem; border-radius: 6px;
-            transition: background 0.15s, color 0.15s;
-        }
-        .nav-link:hover { background: var(--pink-pale); color: var(--pink-dark); }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
-        .btn-nav-cta {
-            display: inline-flex; align-items: center; gap: 0.45rem;
-            background: var(--pink-dark); color: var(--white); text-decoration: none;
-            padding: 0.5rem 1.2rem; border-radius: 100px;
-            font-size: 0.875rem; font-weight: 500;
-            transition: background 0.2s, transform 0.15s;
-            white-space: nowrap;
-        }
-        .btn-nav-cta:hover { background: var(--pink-mid); transform: translateY(-1px); }
+        .top-right-btn:hover { background: rgba(255,255,255,0.3); }
 
         .hero {
             position: relative;
@@ -88,52 +67,200 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 6rem 2rem 2rem;
             overflow: hidden;
-            background: var(--white);
+            background: linear-gradient(135deg, var(--pink-dark) 0%, var(--pink-mid) 100%);
             text-align: center;
         }
 
         .hero::before {
             content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse 70% 60% at 80% 50%, rgba(196,43,99,0.08) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 50% at 20% 80%, rgba(155,28,74,0.05) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 60% 10%, rgba(232,53,110,0.06) 0%, transparent 55%);
-            pointer-events: none; z-index: 0;
+            position: absolute;
+            width: 120vw;
+            height: 120vw;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+            top: -40%;
+            right: -30%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 80vw;
+            height: 80vw;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+            bottom: -20%;
+            left: -20%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            width: 100%;
+            max-width: 1050px;
+            padding: 0 20px;
         }
 
         .hero-left {
-            position: relative; z-index: 1;
-            display: flex; flex-direction: column;
-            align-items: center;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-family: var(--sans);
-            font-size: clamp(2.6rem, 5vw, 4.2rem);
-            font-weight: 400; line-height: 1.08;
-            letter-spacing: -0.02em; color: var(--ink);
-            margin-bottom: 1.25rem;
-        }
-        .hero h1 em { font-style: italic; color: var(--pink-dark); }
-
-        .hero-sub {
-            font-size: 1.1rem; line-height: 1.7; color: var(--ink-3);
-            max-width: 550px; margin-bottom: 2rem;
-        }
-
-        .hero-ctas {
+            flex: 1;
+            max-width: 380px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
-            margin-bottom: 2.5rem;
-            margin-top: 1rem;
         }
+
+        .hero-right {
+            flex: 1;
+            max-width: 500px;
+            text-align: left;
+            color: white;
+        }
+
+        .hero-right h1 {
+            font-size: clamp(2.2rem, 4vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            letter-spacing: -1px;
+        }
+
+        .hero-right p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 30px;
+        }
+        
+        .hero-right-features {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+        }
+        .feature-icon {
+            background: rgba(255,255,255,0.2);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-logo {
+            color: white;
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 35px 30px;
+            border-radius: 24px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-box-title {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .hero-box input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            margin-bottom: 16px;
+            outline: none;
+            background: white;
+            color: var(--ink);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-family: var(--sans);
+            letter-spacing: 2px;
+        }
+        .hero-box input::placeholder {
+            color: #999;
+            font-weight: 500;
+            letter-spacing: 0px;
+        }
+        .hero-box input:focus { 
+            border-color: rgba(255,255,255,0.8); 
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.2); 
+        }
+        
+        .hero-box button {
+            width: 100%;
+            background: var(--ink);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--sans);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(26,10,16,0.3);
+        }
+        .hero-box button:hover { 
+            background: #000; 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26,10,16,0.4);
+        }
+
+        .hero-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            z-index: 1;
+        }
+        .hero-footer a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .hero-footer a:hover { text-decoration: underline; }
 
         section { padding: 6rem 2rem; }
         .section-inner { max-width: 1100px; margin: 0 auto; }
@@ -176,28 +303,44 @@
             padding: 0.22rem 0.6rem; border-radius: 100px;
         }
 
-        .contact-section { background: var(--white); }
-        .contact-inner { max-width: 620px; margin: 0 auto; text-align: center; }
+        .contact-section { 
+            background: var(--white); 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 4rem 2rem;
+        }
+        .contact-inner { 
+            width: 100%;
+            max-width: 800px; 
+            margin: 0 auto; 
+            text-align: center; 
+        }
         .contact-card {
             background: var(--white); border: 1px solid var(--border);
-            border-radius: 20px; padding: 2.75rem;
-            margin-top: 2.5rem; text-align: left;
+            border-radius: 20px; padding: 2rem;
+            margin-top: 1.5rem; text-align: left;
             box-shadow: 0 4px 40px rgba(155,28,74,0.08);
         }
-        .form-group { margin-bottom: 1.1rem; }
-        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-group { margin-bottom: 0.9rem; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--ink); margin-bottom: 0.3rem; }
         .form-group input, .form-group textarea {
             width: 100%; background: var(--white);
-            border: 1px solid var(--border); border-radius: 10px;
-            padding: 0.75rem 1rem; color: var(--ink);
-            font-family: var(--sans); font-size: 0.9rem; outline: none; resize: vertical;
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 0.65rem 0.85rem; color: var(--ink);
+            font-family: var(--sans); font-size: 0.85rem; outline: none; resize: vertical;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .form-group input::placeholder, .form-group textarea::placeholder { color: var(--ink-5); }
         .form-group input:focus, .form-group textarea:focus {
             border-color: var(--pink-dark); box-shadow: 0 0 0 3px rgba(155,28,74,0.08);
         }
-        .form-group textarea { min-height: 110px; }
+        .form-group textarea { min-height: 75px; }
         .submit-btn {
             width: 100%; background: var(--pink-dark); color: var(--white);
             border: none; border-radius: 100px;
@@ -207,6 +350,8 @@
             box-shadow: 0 4px 20px rgba(155,28,74,0.3);
         }
         .submit-btn:hover { background: var(--pink-mid); transform: translateY(-1px); box-shadow: 0 6px 28px rgba(155,28,74,0.4); }
+        .form-note { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; color: var(--ink-4); margin-top: 1rem; justify-content: center; }
+
         .form-note { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; color: var(--ink-4); margin-top: 1rem; justify-content: center; }
 
         footer { border-top: 1px solid var(--border); padding: 2rem 2.5rem; }
@@ -220,6 +365,7 @@
         .footer-links { display: flex; gap: 1.5rem; list-style: none; }
         .footer-links a { font-size: 0.8rem; color: var(--ink-4); text-decoration: none; transition: color 0.2s; }
         .footer-links a:hover { color: var(--pink-dark); }
+
 
         /* ── TOAST NOTIFICATION ── */
         .toast-notification {
@@ -252,6 +398,15 @@
 
         /* ── RESPONSIVE ── */
         @media(max-width:960px) {
+            .hero-content {
+                flex-direction: column-reverse;
+                gap: 40px;
+                text-align: center;
+            }
+            .hero-right { text-align: center; }
+            .hero-right-features { align-items: center; }
+            .hero-logo { margin-bottom: 15px; }
+            
             .hero { height: auto; min-height: auto; padding: 7rem 2rem 4rem; }
             .methods-top     { grid-template-columns:1fr; gap:1.5rem; }
             .methods-grid    { grid-template-columns:1fr; }
@@ -259,74 +414,72 @@
         }
         @media(max-width:600px) {
             nav { padding:0 1.25rem; }
-            .contact-card { padding:1.75rem 1.25rem; }
-            .hero { padding: 7rem 1.5rem 3rem; }
+            .contact-card { padding:1.5rem 1.25rem; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .hero { padding: 0; }
         }
     </style>
 </head>
 <body>
 
-<nav>
-    <a href="#" class="nav-logo">
-        <i class="fas fa-brain" style="color: var(--pink-dark); font-size: 1.25rem;"></i>
-        StressLab<span class="nav-logo-dot">·</span>
-    </a>
-
-
-
-    <div class="nav-right">
-        <a href="/login" class="btn-nav-cta">
-            Researcher Login
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-        </a>
-    </div>
-</nav>
+<a href="/login" class="top-right-btn">
+    <i class="fas fa-globe"></i> Login
+</a>
 
 <section class="hero">
+    <div class="hero-content">
+        <div class="hero-left">
+            <div class="hero-logo">
+                <i class="fas fa-brain"></i> StressLab
+            </div>
 
-    <div class="hero-left">
-        <h1>Centralized platform for<br><em>stress induction</em><br>methods</h1>
-        <p class="hero-sub">
-            A rigorous, validated suite of cognitive stress protocols for psychological research — Stroop, MIST, and TSST with real-time analytics.
-        </p>
+            <div class="hero-box">
+                @if(session('error'))
+                    <div style="color: #c53030; background: #fff5f5; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; margin-bottom: 15px; border: 1px solid #feb2b2;">
+                        <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+                    </div>
+                @endif
 
-        <div class="hero-ctas">
-            @if(session('error'))
-                <div style="color: #c53030; background: #fff5f5; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; border: 1px solid #feb2b2; display: inline-block; animation: fadeIn 0.3s ease-in-out;">
-                    <i class="fas fa-exclamation-circle" style="margin-right: 5px;"></i> {{ session('error') }}
+                <div class="hero-box-title">Join a Session</div>
+
+                <form action="/join" method="POST" style="margin: 0;">
+                    @csrf
+                    <input 
+                        type="text" 
+                        name="access_code" 
+                        placeholder="Enter Access Code" 
+                        required 
+                        maxlength="6" 
+                        autocomplete="off"
+                    >
+                    <button type="submit">Enter</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="hero-right">
+            <h1>Centralized Stress Induction System</h1>
+            <p>A rigorous, validated suite of cognitive stress protocols for psychological research. Participate in secure, real-time analytics sessions.</p>
+            <div class="hero-right-features">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-stopwatch"></i></div>
+                    Standardized Protocols
                 </div>
-            @endif
-
-            <form action="/join" method="POST" style="display: flex; gap: 0.5rem; max-width: 420px; width: 100%; margin: 0 auto;">
-                @csrf
-                <input 
-                    type="text" 
-                    name="access_code" 
-                    placeholder="Enter 6-digit PIN..." 
-                    required 
-                    maxlength="6" 
-                    autocomplete="off"
-                    style="flex: 1; padding: 0.85rem 1.5rem; font-size: 1.1rem; font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; color: var(--ink); background: var(--white); border: 2px solid var(--border); border-radius: 50px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; text-align: center;"
-                    onfocus="this.style.borderColor='var(--pink-dark)'; this.style.boxShadow='0 0 0 3px var(--shadow-pink)';"
-                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';"
-                >
-                
-                <button 
-                    type="submit" 
-                    style="background: var(--pink-dark); color: var(--white); border: none; padding: 0.85rem 2rem; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 4px 15px var(--shadow-pink); white-space: nowrap;"
-                    onmouseover="this.style.background='var(--pink-mid)'; this.style.transform='translateY(-1px)';"
-                    onmouseout="this.style.background='var(--pink-dark)'; this.style.transform='translateY(0)';"
-                >
-                    Start Test <span style="margin-left: 5px;">&rarr;</span>
-                </button>
-            </form>
-
-            <p style="font-size: 0.85rem; color: var(--ink-3); margin-top: 1rem; text-align: center;">
-                Are you a researcher? <a href="#contact" style="color: var(--pink-dark); font-weight: 600; text-decoration: none;">Request Access Here</a>.
-            </p>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    Real-time Data Analytics
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    Secure & Confidential
+                </div>
+            </div>
         </div>
     </div>
 
+    <div class="hero-footer">
+        Are you a researcher? <a href="#contact">Request Access Here</a>
+    </div>
 </section>
 
 
@@ -354,24 +507,28 @@
 
             <form action="/request-access" method="POST">
                 @csrf
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" placeholder="Dr. Ali" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Institution / University Email</label>
-                    <input type="email" id="email" name="email" placeholder="ali@uitm.edu.my" required value="{{ old('email') }}">
-                </div>
-
-                <div class="form-group">
-                    <label for="head_researcher_email">Head Researcher Email</label>
-                    <input type="email" id="head_researcher_email" name="head_researcher_email" placeholder="head@uitm.edu.my" required value="{{ old('head_researcher_email') }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" placeholder="Dr. Ali" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="institution">Institution Name</label>
+                        <input type="text" id="institution" name="institution" placeholder="Universiti Teknologi MARA" required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="institution">Institution Name</label>
-                    <input type="text" id="institution" name="institution" placeholder="Universiti Teknologi MARA" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Institution / University Email</label>
+                        <input type="email" id="email" name="email" placeholder="ali@uitm.edu.my" required value="{{ old('email') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="head_researcher_email">Head Researcher Email</label>
+                        <input type="email" id="head_researcher_email" name="head_researcher_email" placeholder="head@uitm.edu.my" required value="{{ old('head_researcher_email') }}">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -388,7 +545,6 @@
         </div>
     </div>
 </section>
-
 
 <footer>
     <div class="footer-inner">

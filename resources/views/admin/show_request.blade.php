@@ -63,7 +63,13 @@
         </div>
 
         <div style="border-top: 1px solid var(--gray-2); padding-top: 2rem; display: flex; gap: 1rem;">
-            <form method="POST" action="{{ url('/admin/requests/' . $accessRequest->id . '/approve') }}" style="margin: 0; flex: 1;">
+            <form method="POST" action="{{ url('/admin/requests/' . $accessRequest->id . '/reject') }}" style="margin: 0; flex: 1;" onsubmit="return confirm('Are you sure you want to reject this request? An email will be sent to the applicant.');">
+                @csrf
+                <button type="submit" style="width: 100%; display: inline-flex; justify-content: center; align-items: center; gap: 0.5rem; background: var(--white); color: #ef4444; border: 1px solid #ef4444; padding: 0.85rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='var(--white)'">
+                    <i class="fas fa-times-circle"></i> Reject Request
+                </button>
+            </form>
+            <form method="POST" action="{{ url('/admin/requests/' . $accessRequest->id . '/approve') }}" style="margin: 0; flex: 2;">
                 @csrf
                 <button type="submit" style="width: 100%; display: inline-flex; justify-content: center; align-items: center; gap: 0.5rem; background: var(--pink); color: white; padding: 0.85rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-pink);">
                     <i class="fas fa-check-circle"></i> Approve & Send Login Credentials

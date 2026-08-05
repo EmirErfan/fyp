@@ -199,6 +199,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/schedules/create', [TestScheduleController::class, 'create']);
     Route::post('/schedules', [TestScheduleController::class, 'store']);
     Route::get('/schedules/{id}', [TestScheduleController::class, 'show']);
+    Route::delete('/schedules/{id}', [TestScheduleController::class, 'destroy']);
 
     // PARTICIPANTS
     Route::get('/participants', [ParticipantController::class, 'index']);
@@ -212,6 +213,7 @@ Route::middleware('auth')->group(function () {
     // DATA EXPORT
     Route::get('/export', [ExportController::class, 'index']);
     Route::get('/export/csv', [ExportController::class, 'downloadCsv']);
+    Route::get('/export/pdf', [ExportController::class, 'downloadPdf']);
 
     // ADMIN ONLY USER MANAGEMENT
     Route::middleware([\App\Http\Middleware\IsAdmin::class])->group(function () {
@@ -228,6 +230,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/admin/requests', [UserController::class, 'accessRequests']);
         Route::post('/admin/requests/{id}/approve', [UserController::class, 'approveRequest']);
+        Route::post('/admin/requests/{id}/reject', [UserController::class, 'rejectRequest']);
         Route::get('/admin/requests/{id}', [\App\Http\Controllers\UserController::class, 'showRequest']);
 
         // TEAM MANAGEMENT

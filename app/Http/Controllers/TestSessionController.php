@@ -28,37 +28,43 @@ class TestSessionController extends Controller
             $searchId = $matches[1]; 
         }
 
-        $testSessions = TestSession::whereHas('testSchedule', function ($query) {
-            $query->whereDate('date', '>=', now()->toDateString());
-        })
-        ->when(auth()->user()->role === 'admin', function ($query) {
-            $query->whereHas('participant', function ($q) {
-                $q->where('team_id', auth()->user()->team_id);
-            });
-        })
-        ->when(auth()->user()->role === 'researcher', function ($query) {
-            $query->where('user_id', auth()->id());
-        })
-        ->when($search, function ($query) use ($search, $searchId) {
-            $query->whereHas('participant', function ($q) use ($search, $searchId) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$searchId}%");
+        $includePast = $request->has('include_past');
+
+        $testSessions = TestSession::select('test_sessions.*')
+            ->join('test_schedules', 'test_sessions.test_schedule_id', '=', 'test_schedules.id')
+            ->when(!$includePast, function ($query) {
+                $query->whereDate('test_schedules.date', '>=', now()->toDateString());
             })
-            ->orWhereHas('test', function ($q) use ($search) {
-                $q->where('test_type', 'like', "%{$search}%");
-            });
-        })
-        ->when($status, function ($query, $status) {
-            if ($status === 'complete') {
-                $query->has('result');
-            } elseif ($status === 'in-progress') {
-                $query->doesntHave('result');
-            }
-        })
-        ->get()
-        ->sortBy(function ($session) {
-            return $session->testSchedule->date;
-        });
+            ->when(auth()->user()->role === 'admin', function ($query) {
+                $query->whereHas('participant', function ($q) {
+                    $q->where('team_id', auth()->user()->team_id);
+                });
+            })
+            ->when(auth()->user()->role === 'researcher', function ($query) {
+                $query->where('test_sessions.user_id', auth()->id());
+            })
+            ->when($search, function ($query) use ($search, $searchId) {
+                $query->where(function($q2) use ($search, $searchId) {
+                    $q2->whereHas('participant', function ($q) use ($search, $searchId) {
+                        $q->where('name', 'like', "%{$search}%")
+                          ->orWhere('id', 'like', "%{$searchId}%");
+                    })
+                    ->orWhereHas('test', function ($q) use ($search) {
+                        $q->where('test_type', 'like', "%{$search}%");
+                    });
+                });
+            })
+            ->when($status, function ($query, $status) {
+                if ($status === 'complete') {
+                    $query->has('result');
+                } elseif ($status === 'in-progress') {
+                    $query->doesntHave('result');
+                }
+            })
+            ->orderBy('test_schedules.date', 'desc')
+            ->orderBy('test_schedules.time', 'desc')
+            ->paginate(5)
+            ->withQueryString();
 
         return view('test_sessions.index', compact('testSessions'));
     }

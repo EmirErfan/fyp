@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\TestSession;
 use App\Models\Participant;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExportController extends Controller
 {
@@ -18,9 +19,8 @@ class ExportController extends Controller
         return view('export.index', compact('participants'));
     }
 
-    public function downloadCsv(Request $request)
+    private function getFilteredSessions(Request $request)
     {
-        // Start the query
         $query = TestSession::with(['participant', 'test', 'result', 'assessments']);
 
         // --- SECURITY (RBAC) ---
@@ -42,8 +42,12 @@ class ExportController extends Controller
             $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        // Execute the query
-        $sessions = $query->get();
+        return $query->get();
+    }
+
+    public function downloadCsv(Request $request)
+    {
+        $sessions = $this->getFilteredSessions($request);
 
         $headers = [
             "Content-type"        => "text/csv",
@@ -53,22 +57,22 @@ class ExportController extends Controller
             "Expires"             => "0"
         ];
 
-        // ADDED 'Video_Link' AT THE END OF THE COLUMNS
+        // Redesigned headers for better readability
         $columns = [
-            'Session_ID', 'Participant_Name', 'Participant_DOB', 'Participant_Age', 'Participant_Gender', 'Participant_Date_Joined',
-            'Test_Name', 'Session_Date',
-            'Accuracy_Rate', 'Total_Attempts', 'Correct_Answers', 'Total_Errors', 'Average_Reaction_Time',
+            'Session ID', 'Participant Name', 'Date of Birth', 'Age (Years)', 'Gender', 'Date Joined',
+            'Test Type', 'Session Date & Time',
+            'Accuracy Rate (%)', 'Total Attempts', 'Correct Answers', 'Total Errors', 'Avg Reaction Time (ms)',
             
             // Pre-Test
-            'Pre_Distress_01', 'Pre_Distress_02', 'Pre_Distress_03', 'Pre_Distress_04', 'Pre_Distress_05',
-            'Pre_Eustress_01', 'Pre_Eustress_02', 'Pre_Eustress_03', 'Pre_Eustress_04',
+            'Pre-Test Distress 1', 'Pre-Test Distress 2', 'Pre-Test Distress 3', 'Pre-Test Distress 4', 'Pre-Test Distress 5',
+            'Pre-Test Eustress 1', 'Pre-Test Eustress 2', 'Pre-Test Eustress 3', 'Pre-Test Eustress 4',
             
             // Post-Test
-            'Post_Distress_01', 'Post_Distress_02', 'Post_Distress_03', 'Post_Distress_04', 'Post_Distress_05',
-            'Post_Eustress_01', 'Post_Eustress_02', 'Post_Eustress_03', 'Post_Eustress_04',
+            'Post-Test Distress 1', 'Post-Test Distress 2', 'Post-Test Distress 3', 'Post-Test Distress 4', 'Post-Test Distress 5',
+            'Post-Test Eustress 1', 'Post-Test Eustress 2', 'Post-Test Eustress 3', 'Post-Test Eustress 4',
             
             // Video Link
-            'Screen_Video_Link'
+            'Screen Recording Video Link'
         ];
 
         $callback = function() use($sessions, $columns) {
@@ -78,31 +82,29 @@ class ExportController extends Controller
             foreach ($sessions as $session) {
                 $participant = $session->participant;
                 $test = $session->test;
-                $result = $session->result; // This is where the videos live!
+                $result = $session->result; 
                 
                 $preTest = $session->assessments->firstWhere('type', 'pre');
                 $postTest = $session->assessments->firstWhere('type', 'post');
 
-                // Get the videos from the RESULT table instead of the session table
-                $faceVideo = ($result && $result->face_video_path) ? url('storage/' . $result->face_video_path) : 'N/A';
                 $screenVideo = ($result && $result->screen_video_path) ? url('storage/' . $result->screen_video_path) : 'N/A';
 
                 $row = [
                     $session->id,
                     $participant ? $participant->name : 'N/A',
-                    $participant ? $participant->dob : 'N/A',
+                    $participant ? Carbon::parse($participant->dob)->format('M d, Y') : 'N/A',
                     $participant ? $participant->age : 'N/A',
-                    $participant ? $participant->gender : 'N/A',
-                    $participant ? $participant->date_joined : 'N/A',
+                    $participant ? ucfirst($participant->gender) : 'N/A',
+                    $participant ? Carbon::parse($participant->date_joined)->format('M d, Y') : 'N/A',
                     
-                    $test ? $test->test_type : 'N/A', // Make sure this matches your DB column for test name
-                    $session->created_at ? $session->created_at->format('Y-m-d H:i:s') : 'N/A',
+                    $test ? $test->test_type : 'N/A', 
+                    $session->created_at ? $session->created_at->format('M d, Y h:i A') : 'N/A',
                     
-                    $result ? $result->accuracy_rate : 'N/A',
+                    $result && $result->accuracy_rate !== null ? round($result->accuracy_rate, 2) . '%' : 'N/A',
                     $result ? $result->total_attempts : 'N/A',
                     $result ? $result->correct_answers : 'N/A',
                     $result ? $result->total_error : 'N/A',
-                    $result ? $result->average_reaction_time : 'N/A',
+                    $result && $result->average_reaction_time !== null ? round($result->average_reaction_time, 2) : 'N/A',
 
                     // Pre-test
                     $preTest ? $preTest->distress_item_01 : 'N/A',
@@ -125,6 +127,7 @@ class ExportController extends Controller
                     $postTest ? $postTest->eustress_item_02 : 'N/A',
                     $postTest ? $postTest->eustress_item_03 : 'N/A',
                     $postTest ? $postTest->eustress_item_04 : 'N/A',
+                    
                     $screenVideo
                 ];
 
@@ -135,5 +138,14 @@ class ExportController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function downloadPdf(Request $request)
+    {
+        $sessions = $this->getFilteredSessions($request);
+        
+        $pdf = Pdf::loadView('export.pdf', compact('sessions'));
+        
+        return $pdf->download("research_data_export_" . date('Y_m_d_His') . ".pdf");
     }
 }

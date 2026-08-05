@@ -7,7 +7,7 @@
 <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.03); max-width: 800px;">
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
         <div style="width: 48px; height: 48px; background: #e8f0fe; color: #1a73e8; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-            <i class="fas fa-file-csv"></i>
+            <i class="fas fa-file-export"></i>
         </div>
         <div>
             <h2 style="font-size: 1.25rem; font-weight: 700; color: #111; margin-bottom: 0.25rem;">Research Data Export</h2>
@@ -36,7 +36,7 @@
         </ul>
     </div>
 
-    <form action="{{ url('/export/csv') }}" method="GET" style="display: flex; flex-direction: column; gap: 1.25rem;">
+    <form id="exportForm" method="GET" style="display: flex; flex-direction: column; gap: 1.25rem;">
         
         <div>
             <label for="participant_id" style="display: block; font-weight: 600; font-size: 0.9rem; color: #333; margin-bottom: 0.5rem;">Filter by Participant</label>
@@ -59,16 +59,31 @@
             </div>
         </div>
 
-        <div style="margin-top: 1rem;">
-            <button type="submit" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.85rem 1.75rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: inherit;">
-                <i class="fas fa-download"></i> Generate CSV Report
+        <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+            <button type="button" onclick="submitExport('csv')" style="display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.85rem 1.75rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: inherit;">
+                <i class="fas fa-file-csv"></i> Generate CSV Report
+            </button>
+            <button type="button" onclick="submitExport('pdf')" style="display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.5rem; background: #ef4444; color: white; padding: 0.85rem 1.75rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: inherit;">
+                <i class="fas fa-file-pdf"></i> Generate PDF Report
             </button>
         </div>
     </form>
 </div>
 
+<script>
+    function submitExport(type) {
+        const form = document.getElementById('exportForm');
+        if (type === 'csv') {
+            form.action = "{{ url('/export/csv') }}";
+        } else if (type === 'pdf') {
+            form.action = "{{ url('/export/pdf') }}";
+        }
+        form.submit();
+    }
+</script>
+
 <style>
-    button[type="submit"]:hover { background: #1557b0 !important; }
-    button[type="submit"]:active { transform: scale(0.98); }
+    button[type="button"]:hover { opacity: 0.9; }
+    button[type="button"]:active { transform: scale(0.98); }
 </style>
 @endsection

@@ -10,13 +10,27 @@ use App\Models\AccessRequest;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResearcherAccessMail;
+use App\Mail\ResearcherAccessRejectedMail;
 
 class UserController extends Controller
 {
-    // List all users
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('id', 'desc')->get();
+        $query = User::with('team');
+        $sort = $request->get('sort', 'id');
+        $dir = $request->get('dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        if ($sort === 'role') {
+            $query->orderBy('role', $dir);
+        } elseif ($sort === 'team') {
+            $query->leftJoin('teams', 'users.team_id', '=', 'teams.id')
+                  ->orderBy('teams.name', $dir)
+                  ->select('users.*');
+        } else {
+            $query->orderBy('users.id', $dir);
+        }
+
+        $users = $query->paginate(5)->withQueryString();
         return view('users.index', compact('users'));
     }
 
@@ -26,21 +40,25 @@ class UserController extends Controller
         return view('users.create');
     }
 
-    // Handle the registration logic
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,researcher',
+            'institution' => 'nullable|string|max:255',
+            'purpose' => 'nullable|string',
         ]);
+
+        $password = Str::random(12);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($password),
             'role' => $request->role,
+            'university' => $request->institution,
+            'bio' => $request->purpose,
         ]);
 
         if ($request->role === 'admin') {
@@ -50,7 +68,9 @@ class UserController extends Controller
             $user->update(['team_id' => auth()->user()->team_id]);
         }
 
-        return redirect('/users')->with('success', 'User account created successfully.');
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ResearcherAccessMail($user->email, $password));
+
+        return redirect('/users')->with('success', 'User account created successfully. Login credentials have been emailed.');
     }
 
     public function viewStaffSessions($id)
@@ -91,6 +111,16 @@ class UserController extends Controller
         return back()->with('success', 'Account created and login information emailed');
     }
 
+    public function rejectRequest($id){
+        $request = AccessRequest::findOrFail($id);
+        
+        $request->update(['status' => 'rejected']);
+
+        Mail::to($request->email)->send(new ResearcherAccessRejectedMail($request->name));
+
+        return back()->with('success', 'Request rejected and notification emailed.');
+    }
+
     public function showRequest($id)
     {
         $accessRequest = AccessRequest::findOrFail($id);
@@ -116,7 +146,6 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $editUser->id,
-            'role' => 'required|in:admin,researcher',
             'team_id' => 'nullable|exists:teams,id',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'university' => 'nullable|string|max:255',
@@ -139,7 +168,6 @@ class UserController extends Controller
         // 4. Save the rest of the text data
         $editUser->name = $request->name;
         $editUser->email = $request->email;
-        $editUser->role = $request->role; // Admin can change roles
         
         // Handle team change for researchers
         if ($editUser->role === 'researcher' && $request->has('team_id') && $editUser->team_id != $request->team_id) {
@@ -165,6 +193,8 @@ class UserController extends Controller
         if (auth()->id() === $user->id) {
             return redirect('/users')->with('error', 'Action denied: You cannot delete your own administrator account.');
         }
+
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ResearcherRemovedMail($user->name));
 
         $user->delete();
 

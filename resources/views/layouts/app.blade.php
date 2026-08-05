@@ -354,6 +354,41 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        /* ── PAGINATION ── */
+        .pagination-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .page-numbers {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .page-item {
+            padding: 0.4rem 0.85rem;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        a.page-item:hover {
+            background: var(--pink-lt);
+            color: var(--pink);
+        }
+        .page-item.active {
+            background: var(--pink);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(200,24,74,0.25);
+        }
+        .page-item.disabled {
+            color: var(--gray-3);
+            cursor: not-allowed;
+        }
+
         /* ── MAIN ── */
         .main-content {
             margin-top: var(--navbar-h);
@@ -386,10 +421,10 @@
             </a>
             <div class="nav-sep"></div>
             <a href="/test-sessions" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}">
-                <i class="fas fa-vial"></i> Test Sessions
+                <i class="fas fa-vial"></i> Test
             </a>
             <a href="/schedules" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}">
-                <i class="fas fa-calendar-alt"></i> Schedules
+                <i class="fas fa-calendar-alt"></i> Sessions
             </a>
             <div class="nav-sep"></div>
             <a href="/participants" class="nav-link {{ Request::is('participants*') ? 'active' : '' }}">
@@ -443,8 +478,8 @@
     <div class="mobile-drawer" id="mobileDrawer">
         <a href="/dashboard" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-chart-pie"></i> Dashboard</a>
         <div class="mobile-sep"></div>
-        <a href="/test-sessions" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-vial"></i> Test Sessions</a>
-        <a href="/schedules" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-calendar-alt"></i> Schedules</a>
+        <a href="/test-sessions" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-vial"></i> Test</a>
+        <a href="/schedules" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-calendar-alt"></i> Sessions</a>
         <div class="mobile-sep"></div>
         <a href="/participants" class="nav-link {{ Request::is('participants*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-users"></i> Participants</a>
         <a href="/export" class="nav-link {{ Request::is('export*') ? 'active' : '' }}" onclick="closeMobileNav()"><i class="fas fa-file-export"></i> Export</a>
@@ -484,6 +519,14 @@
     </main>
 
     <script>
+        function toggleMobileNav() {
+            document.getElementById('mobileDrawer').classList.toggle('open');
+        }
+        
+        function closeMobileNav() {
+            document.getElementById('mobileDrawer').classList.remove('open');
+        }
+
         function toggleProfileMenu(event) {
             // Prevent the click from triggering the window click listener below
             event.stopPropagation(); 

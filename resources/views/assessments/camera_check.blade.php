@@ -41,23 +41,24 @@
         var canvas = document.getElementById('canvas');
         var context = canvas.getContext('2d');
         var statusBox = document.getElementById('status-box');
-        var faceDetectedFrames = 0;
-        var requiredFrames = 10; 
 
-        var tracker = new tracking.ObjectTracker('face');
-        tracker.setInitialScale(4);
-        tracker.setStepSize(2);
-        tracker.setEdgesDensity(0.1);
-
-        // Manually request camera access for modern browser compatibility
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
                 video.srcObject = stream;
                 
                 video.onloadedmetadata = function() {
                     video.play();
-                    // Start tracking once video is playing
-                    tracking.track('#video', tracker);
+                    statusBox.className = 'status status-success';
+                    statusBox.innerHTML = 'Camera Active! Proceeding to Pre-Test...';
+                    
+                    setTimeout(function() {
+                        if (video.srcObject) {
+                            video.srcObject.getTracks().forEach(function(track) {
+                                track.stop();
+                            });
+                        }
+                        window.location.href = "/test-sessions/{{ $session->id }}/pre-test";
+                    }, 1500);
                 };
             }).catch(function(err) {
                 console.error("Camera error:", err);
@@ -68,45 +69,6 @@
             statusBox.className = 'status status-error';
             statusBox.innerHTML = 'Camera not supported in this browser.';
         }
-
-        tracker.on('track', function(event) {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Adjust canvas to match video dimensions once video starts playing
-            if(canvas.width !== video.videoWidth && video.videoWidth > 0) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-            }
-
-            if (event.data.length === 0) {
-                // No face detected
-            } else {
-                event.data.forEach(function(rect) {
-                    context.strokeStyle = '#a64ceb';
-                    context.lineWidth = 3;
-                    context.strokeRect(rect.x, rect.y, rect.width, rect.height);
-                });
-
-                faceDetectedFrames++;
-                if (faceDetectedFrames >= requiredFrames) {
-                    // Success!
-                    statusBox.className = 'status status-success';
-                    statusBox.innerHTML = 'Face Detected! Proceeding...';
-                    tracker.removeAllListeners(); // stop tracking
-                    
-                    // Turn off the camera before leaving
-                    if (video.srcObject) {
-                        video.srcObject.getTracks().forEach(function(track) {
-                            track.stop();
-                        });
-                    }
-                    
-                    setTimeout(function() {
-                        window.location.href = "/test-sessions/{{ $session->id }}/pre-test";
-                    }, 1000);
-                }
-            }
-        });
     };
 </script>
 @endsection

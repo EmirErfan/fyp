@@ -89,5 +89,10 @@
             </tbody>
         </table>
     </div>
+    @if($participants->hasPages())
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+            {{ $participants->links('vendor.pagination.custom') }}
+        </div>
+    @endif
 </div>
 @endsection

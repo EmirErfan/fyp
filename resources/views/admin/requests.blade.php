@@ -53,11 +53,17 @@
                             
                             <td style="padding: 1rem; color: #64748b;">{{ $request->created_at->format('M d, Y') }}</td>
                             
-                            <td style="padding: 1rem; text-align: right;">
+                            <td style="padding: 1rem; text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                <form method="POST" action="{{ url('/admin/requests/' . $request->id . '/reject') }}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reject this request? An email will be sent.');">
+                                    @csrf
+                                    <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </form>
                                 <form method="POST" action="{{ url('/admin/requests/' . $request->id . '/approve') }}" style="margin: 0;">
                                     @csrf
                                     <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #db2777; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#be185d'" onmouseout="this.style.background='#db2777'">
-                                        <i class="fas fa-check-circle"></i> Approve & Send Info
+                                        <i class="fas fa-check-circle"></i> Approve
                                     </button>
                                 </form>
                             </td>

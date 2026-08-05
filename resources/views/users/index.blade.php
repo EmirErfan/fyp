@@ -4,13 +4,19 @@
 @section('page-title', 'User Management')
 
 @section('content')
-<div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+<style>
+    .users-container { padding: 2rem; }
+    @media (max-width: 600px) {
+        .users-container { padding: 1rem; }
+    }
+</style>
+<div class="users-container" style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <div>
             <h2 style="font-size: 1.25rem; font-weight: 700; color: #111; margin-bottom: 0.25rem;">Staff & Researchers</h2>
             <p style="color: #666; font-size: 0.9rem;">Manage system access and roles.</p>
         </div>
-        <a href="/users/create" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s;">
+        <a href="/users/create" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap;">
             <i class="fas fa-plus"></i> Add New User
         </a>
     </div>
@@ -27,7 +33,12 @@
                 <tr style="border-bottom: 2px solid #f1f5f9;">
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Name</th>
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Email</th>
-                    <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Role</th>
+                    <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <a href="?sort=role&dir={{ request('sort') === 'role' && request('dir') === 'asc' ? 'desc' : 'asc' }}" style="color: inherit; text-decoration: none;">Role {!! request('sort') === 'role' ? (request('dir') === 'asc' ? '↑' : '↓') : '↕' !!}</a>
+                    </th>
+                    <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <a href="?sort=team&dir={{ request('sort') === 'team' && request('dir') === 'asc' ? 'desc' : 'asc' }}" style="color: inherit; text-decoration: none;">Team {!! request('sort') === 'team' ? (request('dir') === 'asc' ? '↑' : '↓') : '↕' !!}</a>
+                    </th>
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Joined</th>
                     <th style="padding: 1rem; color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Actions</th>
                 </tr>
@@ -55,6 +66,9 @@
                                 <span style="background: #f0f9ff; color: #0284c7; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; border: 1px solid #bae6fd;">RESEARCHER</span>
                             @endif
                         </td>
+                        <td style="padding: 1rem; color: #64748b; font-size: 0.95rem;">
+                            {{ $user->team ? $user->team->name : '-' }}
+                        </td>
                         <td style="padding: 1rem; color: #64748b; font-size: 0.95rem;">{{ $user->created_at->format('M d, Y') }}</td>
                         <td style="padding: 1rem;">
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -77,5 +91,10 @@
             </tbody>
         </table>
     </div>
+    @if($users->hasPages())
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+            {{ $users->links('vendor.pagination.custom') }}
+        </div>
+    @endif
 </div>
 @endsection

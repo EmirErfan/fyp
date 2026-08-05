@@ -7,7 +7,7 @@
 <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.03); max-width: 600px; margin: 0 auto;">
     <div style="margin-bottom: 2rem;">
         <h2 style="font-size: 1.25rem; font-weight: 700; color: #111; margin-bottom: 0.25rem;">Register New Account</h2>
-        <p style="color: #666; font-size: 0.9rem;">Provide credentials for a new admin or researcher.</p>
+        <p style="color: #666; font-size: 0.9rem;">Provide details for a new user. Login credentials will be automatically generated and emailed to them.</p>
     </div>
 
     @if($errors->any())
@@ -44,18 +44,16 @@
             </select>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <!-- Password -->
-            <div>
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Password</label>
-                <input type="password" name="password" required style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#cbd5e1'">
-            </div>
+        <!-- Institution -->
+        <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Institution Name</label>
+            <input type="text" name="institution" placeholder="e.g. Universiti Teknologi MARA" value="{{ old('institution') }}" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#cbd5e1'">
+        </div>
 
-            <!-- Confirm Password -->
-            <div>
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Confirm Password</label>
-                <input type="password" name="password_confirmation" required style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#cbd5e1'">
-            </div>
+        <!-- Purpose -->
+        <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Research Purpose / Bio</label>
+            <textarea name="purpose" placeholder="Briefly describe the research study or user bio..." rows="3" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: border-color 0.2s; resize: vertical;" onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#cbd5e1'">{{ old('purpose') }}</textarea>
         </div>
 
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
