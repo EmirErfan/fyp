@@ -424,7 +424,7 @@
                                                 <i class="fas fa-envelope"></i> Email
                                             </button>
                                         </form>
-                                        <a href="/test-sessions/{{ $session->id }}/consent" class="btn-action btn-start">
+                                        <a href="/test-sessions/{{ $session->id }}/consent" class="btn-action btn-start" onclick="return checkScheduleDate('{{ $session->testSchedule ? $session->testSchedule->date : '' }}')">
                                             <i class="fas fa-play"></i> Start Test
                                         </a>
                                     @else
@@ -446,4 +446,26 @@
         {{ $testSessions->links('vendor.pagination.custom') }}
     </div>
 
+@endsection
+
+@section('scripts')
+<script>
+    function checkScheduleDate(scheduleDateStr) {
+        if (!scheduleDateStr) return true;
+        let parts = scheduleDateStr.split('-');
+        let scheduleDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        scheduleDate.setHours(0, 0, 0, 0);
+
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (today < scheduleDate) {
+            return confirm("Are you sure you want to start the test early?");
+        } else if (today > scheduleDate) {
+            return confirm("Are you sure you want to start the past session?");
+        }
+        
+        return true;
+    }
+</script>
 @endsection
