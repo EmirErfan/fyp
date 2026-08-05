@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email');
-            $table->string('institution')->after('email');
+            $table->string('institution');
             $table->string('purpose');
             $table->string('status')->default('pending');
             $table->timestamps();
@@ -27,8 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('access_requests', function (Blueprint $table) {
-            $table->dropColumn('institution');
-        });
+        Schema::dropIfExists('access_requests');
     }
 };
