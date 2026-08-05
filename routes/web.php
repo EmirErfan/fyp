@@ -98,7 +98,7 @@ Route::get('/test-sessions/{id}/result-summary', [AssessmentController::class, '
 */
 Route::middleware('auth')->group(function () {
     
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::any('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // DASHBOARD
     Route::get('/dashboard', function () {
