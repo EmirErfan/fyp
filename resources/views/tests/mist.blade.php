@@ -283,7 +283,7 @@
                     if (warningElapsed >= 5) {
                         clearInterval(faceMonitorInterval);
                         dismissFaceWarning();
-                        endTest();
+                        endTest(true);
                     }
                 }
             }
@@ -396,7 +396,7 @@
 
                 if (globalTimeRemaining <= 0) {
                     clearInterval(globalTimer);
-                    endTest();
+                    endTest(false);
                 }
             }, 1000);
         }
@@ -549,7 +549,7 @@
             warningText.innerText = `Performance Warning: You are ${difference}s slower than the required peer baseline.`;
         }
 
-        function endTest() {
+        function endTest(isInterrupted = false) {
             isPlaying = false;
             if (typeof faceMonitorInterval !== 'undefined' && faceMonitorInterval) {
                 clearInterval(faceMonitorInterval);
@@ -557,6 +557,7 @@
             if (typeof dismissFaceWarning === 'function') {
                 dismissFaceWarning();
             }
+            if (typeof questionTimer !== 'undefined') clearInterval(questionTimer);
             cancelAnimationFrame(animationId);
             
             document.getElementById('game-screen').classList.add('hidden');
@@ -564,18 +565,18 @@
 
             if (combinedRecorder && combinedRecorder.state !== 'inactive') {
                 combinedRecorder.onstop = () => {
-                    uploadVideo();
+                    uploadVideo(isInterrupted);
                 };
                 combinedRecorder.stop();
             } else {
-                uploadVideo();
+                uploadVideo(isInterrupted);
             }
 
             if(faceStreamMain) faceStreamMain.getTracks().forEach(t => t.stop());
             if(screenStreamMain) screenStreamMain.getTracks().forEach(t => t.stop());
         }
 
-        function uploadVideo() {
+        function uploadVideo(isInterrupted = false) {
             let formData = new FormData();
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
@@ -609,6 +610,9 @@
                     let err = await res.text();
                     alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
                 } else {
+                    if (!isInterrupted) {
+                        localStorage.setItem('test_completed_' + sessionId, 'true');
+                    }
                     window.close();
                     document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window.</p>";
                 }

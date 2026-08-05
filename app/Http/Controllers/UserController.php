@@ -59,6 +59,7 @@ class UserController extends Controller
             'role' => $request->role,
             'university' => $request->institution,
             'bio' => $request->purpose,
+            'must_change_password' => true,
         ]);
 
         if ($request->role === 'admin') {
@@ -102,6 +103,7 @@ class UserController extends Controller
             'password' => Hash::make($password),
             'role' => 'researcher',
             'team_id' => auth()->user()->team_id,
+            'must_change_password' => true,
         ]);
 
         $request->update(['status' => 'approved']);

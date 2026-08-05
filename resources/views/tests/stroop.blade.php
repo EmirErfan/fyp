@@ -76,8 +76,7 @@
             <div id="word-display">WORD</div>
 
             <div class="color-buttons">
-                <button class="color-btn btn-red" onclick="checkAnswer('red')">Red</button>
-                <button class="color-btn btn-blue" onclick="checkAnswer('blue')">Blue</button>
+                <!-- Dynamically generated choices -->
             </div>
         </div>
     </div>
@@ -92,10 +91,15 @@
     <script>
         const colors = [
             { name: 'RED', value: 'red', hex: '#dc3545' },
-            { name: 'BLUE', value: 'blue', hex: '#0d6efd' }
+            { name: 'BLUE', value: 'blue', hex: '#0d6efd' },
+            { name: 'GREEN', value: 'green', hex: '#198754' },
+            { name: 'YELLOW', value: 'yellow', hex: '#ffc107' },
+            { name: 'PURPLE', value: 'purple', hex: '#6f42c1' },
+            { name: 'ORANGE', value: 'orange', hex: '#fd7e14' },
+            { name: 'BLACK', value: 'black', hex: '#212529' },
+            { name: 'GRAY', value: 'gray', hex: '#6c757d' },
+            { name: 'BROWN', value: 'brown', hex: '#8B4513' }
         ];
-
-        const wordList = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE', 'WHITE', 'BLACK', 'GRAY', 'BROWN'];
 
         let globalTimeRemaining = 120; 
         let isPlaying = false;
@@ -258,7 +262,7 @@
                     if (warningElapsed >= 5) {
                         clearInterval(faceMonitorInterval);
                         dismissFaceWarning();
-                        endTest();
+                        endTest(true);
                     }
                 }
             }
@@ -345,7 +349,7 @@
 
                 if (globalTimeRemaining <= 0) {
                     clearInterval(globalTimer);
-                    endTest();
+                    endTest(false);
                 }
             }, 1000);
         }
@@ -377,14 +381,30 @@
         }
 
         function nextWord() {
-            let randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+            let randomWordObj = colors[Math.floor(Math.random() * colors.length)];
+            let randomWord = randomWordObj.name;
+            
             let availableColors = colors.filter(c => c.name !== randomWord);
             let colorObj = availableColors[Math.floor(Math.random() * availableColors.length)];
             currentInkColor = colorObj.value;
+            
             let display = document.getElementById('word-display');
             display.innerText = randomWord;
             display.style.color = colorObj.hex;
             wordStartTime = Date.now();
+
+            let choice1 = colorObj; // ink color (correct)
+            let choice2 = randomWordObj; // word meaning (incorrect)
+
+            let choices = Math.random() > 0.5 ? [choice1, choice2] : [choice2, choice1];
+
+            let buttonsHtml = '';
+            choices.forEach(choice => {
+                let textColor = (choice.name === 'YELLOW') ? '#000' : '#fff';
+                buttonsHtml += `<button class="color-btn" style="background-color: ${choice.hex}; color: ${textColor};" onclick="checkAnswer('${choice.value}')">${choice.name}</button>`;
+            });
+            document.querySelector('.color-buttons').innerHTML = buttonsHtml;
+
             startQuestionTimer();
         }
 
@@ -444,7 +464,7 @@
             nextWord();
         }
 
-        function endTest() {
+        function endTest(isInterrupted = false) {
             isPlaying = false;
             if (typeof faceMonitorInterval !== 'undefined' && faceMonitorInterval) {
                 clearInterval(faceMonitorInterval);
@@ -461,11 +481,11 @@
             // When the recorder stops, IT triggers the upload. (No more random 3 second guessing!)
             if (combinedRecorder && combinedRecorder.state !== 'inactive') {
                 combinedRecorder.onstop = () => {
-                    uploadVideo();
+                    uploadVideo(isInterrupted);
                 };
                 combinedRecorder.stop();
             } else {
-                uploadVideo();
+                uploadVideo(isInterrupted);
             }
 
             // Shut down cameras
@@ -473,7 +493,7 @@
             if(screenStreamMain) screenStreamMain.getTracks().forEach(t => t.stop());
         }
 
-        function uploadVideo() {
+        function uploadVideo(isInterrupted = false) {
             let formData = new FormData();
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
@@ -506,6 +526,9 @@
                     let err = await res.text();
                     alert("UPLOAD ERROR " + res.status + ":\n\n" + err.substring(0, 400));
                 } else {
+                    if (!isInterrupted) {
+                        localStorage.setItem('test_completed_' + sessionId, 'true');
+                    }
                     window.close();
                     document.getElementById('results-screen').innerHTML = "<h2 style='color:#198754'>Upload Complete!</h2><p>You may safely close this window.</p>";
                 }

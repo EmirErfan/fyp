@@ -28,6 +28,7 @@ class User extends Authenticatable
         'department',
         'bio',
         'team_id',
+        'must_change_password',
     ];
 
     /**

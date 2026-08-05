@@ -51,16 +51,24 @@
         // 3. Show the "Test in progress" message
         document.getElementById('statusMsg').style.display = "block";
 
-        // 4. THE MAGIC: Check every 1 second if the popup window has closed
         let timer = setInterval(function() {
             if (testWindow && testWindow.closed) {
                 clearInterval(timer); // Stop checking
                 
-                // Change the text to green to show success
-                document.getElementById('statusMsg').innerHTML = "<span style='color: #198754;'>Test Complete! Loading Post-Test...</span>";
+                let isCompleted = localStorage.getItem('test_completed_{{ $session->id }}');
                 
-                // 5. Automatically redirect the main Launch Pad directly to the Post-Test!
-                window.location.href = "/test-sessions/{{ $session->id }}/post-test";
+                if (isCompleted === 'true') {
+                    // Change the text to green to show success
+                    document.getElementById('statusMsg').innerHTML = "<span style='color: #198754;'>Test Complete! Loading Post-Test...</span>";
+                    
+                    // Automatically redirect the main Launch Pad directly to the Post-Test!
+                    window.location.href = "/test-sessions/{{ $session->id }}/post-test";
+                } else {
+                    document.getElementById('statusMsg').innerHTML = "<span style='color: #dc3545;'>The test is not complete. Please try again or inform the researcher.</span>";
+                    alert("The test is not complete. Please try again or inform the researcher.");
+                    document.getElementById('launchBtn').disabled = false;
+                    document.getElementById('launchBtn').innerText = "Launch {{ $session->test->test_type ?? 'Task' }}";
+                }
             }
         }, 1000); 
     }
