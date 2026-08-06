@@ -17,8 +17,13 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::with('team');
-        $sort = $request->get('sort', 'id');
-        $dir = $request->get('dir', 'desc') === 'asc' ? 'asc' : 'desc';
+        $sort = $request->get('sort', 'role');
+        $dir = $request->get('dir', 'asc') === 'desc' ? 'desc' : 'asc';
+        $teamFilter = $request->get('team_id');
+
+        if ($teamFilter) {
+            $query->where('team_id', $teamFilter);
+        }
 
         if ($sort === 'role') {
             $query->orderBy('role', $dir);
@@ -31,7 +36,8 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(5)->withQueryString();
-        return view('users.index', compact('users'));
+        $teams = \App\Models\Team::orderBy('name')->get();
+        return view('users.index', compact('users', 'teams'));
     }
 
     // Show the registration form

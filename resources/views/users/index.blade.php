@@ -16,9 +16,21 @@
             <h2 style="font-size: 1.25rem; font-weight: 700; color: #111; margin-bottom: 0.25rem;">Staff & Researchers</h2>
             <p style="color: #666; font-size: 0.9rem;">Manage system access and roles.</p>
         </div>
-        <a href="/users/create" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap;">
-            <i class="fas fa-plus"></i> Add New User
-        </a>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <form method="GET" action="/users" style="margin: 0; display: flex; gap: 0.5rem; align-items: center;">
+                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                <input type="hidden" name="dir" value="{{ request('dir') }}">
+                <select name="team_id" onchange="this.form.submit()" style="padding: 0.5rem; border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.9rem; background: #f9fafb; color: #374151;">
+                    <option value="">All Teams</option>
+                    @foreach($teams as $team)
+                        <option value="{{ $team->id }}" {{ request('team_id') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                    @endforeach
+                </select>
+            </form>
+            <a href="/users/create" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1a73e8; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap;">
+                <i class="fas fa-plus"></i> Add New User
+            </a>
+        </div>
     </div>
 
     @if(session('success'))
