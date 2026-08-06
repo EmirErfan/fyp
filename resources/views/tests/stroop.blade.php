@@ -8,6 +8,8 @@
     <!-- Load tracking.js for continuous face monitoring -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .test-container { background: white; padding: 50px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); width: 100%; max-width: 800px; text-align: center; }
@@ -287,14 +289,6 @@
             document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
             try {
                 faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                
-                await Swal.fire({
-                    title: 'Screen Recording Required',
-                    html: '<div style="text-align:left;">On the next prompt:<br><br>1. Select <b>Entire Screen</b> (or Chrome Tab)<br>2. <b>Click on the screen preview</b> to select it<br>3. Click the blue <b>Share</b> button</div>',
-                    icon: 'info',
-                    confirmButtonText: 'Got it!'
-                });
-
                 screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "monitor" }, audio: false });
 
                 faceVid.srcObject = faceStreamMain;
@@ -545,6 +539,48 @@
                 alert("NETWORK ERROR: " + err);
             });
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const driver = window.driver.js.driver;
+            const tour = driver({
+                showProgress: true,
+                steps: [
+                    {
+                        element: '.header',
+                        popover: {
+                            title: 'Welcome to Stroop',
+                            description: 'This is the Stroop Color and Word Test. You will be shown color names printed in different colors.',
+                            side: "bottom", align: 'start'
+                        }
+                    },
+                    {
+                        element: '.stroop-word',
+                        popover: {
+                            title: 'The Challenge',
+                            description: 'You must identify the <b>ink color</b> of the word, NOT the word itself!',
+                            side: "bottom", align: 'start'
+                        }
+                    },
+                    {
+                        element: '.buttons',
+                        popover: {
+                            title: 'How to Answer',
+                            description: 'Click the button corresponding to the ink color, or use your keyboard (R for Red, G for Green, B for Blue, Y for Yellow).',
+                            side: "top", align: 'start'
+                        }
+                    },
+                    {
+                        element: '#start-btn',
+                        popover: {
+                            title: 'Start Experiment',
+                            description: 'When you are ready, click this button.<br><br><b>Important:</b> You will be prompted to share your screen. Select <b>Entire Screen</b>, click the preview image, and click <b>Share</b> to begin.',
+                            side: "top", align: 'start'
+                        }
+                    }
+                ]
+            });
+            tour.drive();
+        });
     </script>
 
 </body>

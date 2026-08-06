@@ -599,10 +599,10 @@
                         }
                     },
                     {
-                        element: '#nav-dashboard',
+                        element: '#nav-sessions',
                         popover: {
                             title: 'Step 4: View Results',
-                            description: 'Finally, head over to the <b>Dashboard</b>. Here you can view completed sessions, replay the recorded videos, and view the AI emotion analysis reports.',
+                            description: 'Finally, head back over to the <b>Sessions</b> tab (or <b>Export</b>). Here you can view completed sessions, replay the recorded videos, and download the AI emotion analysis reports.',
                             side: "bottom", align: 'start'
                         }
                     }
