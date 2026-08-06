@@ -554,19 +554,11 @@
                         }
                     },
                     {
-                        element: '.stroop-word',
+                        element: '#start-screen p',
                         popover: {
                             title: 'The Challenge',
-                            description: 'You must identify the <b>ink color</b> of the word, NOT the word itself!',
+                            description: 'Read the instructions carefully. You must identify the <b>ink color</b> of the word, NOT the word itself!',
                             side: "bottom", align: 'start'
-                        }
-                    },
-                    {
-                        element: '.buttons',
-                        popover: {
-                            title: 'How to Answer',
-                            description: 'Click the button corresponding to the ink color, or use your keyboard (R for Red, G for Green, B for Blue, Y for Yellow).',
-                            side: "top", align: 'start'
                         }
                     },
                     {

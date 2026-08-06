@@ -638,11 +638,11 @@
                         }
                     },
                     {
-                        element: '.mist-ui',
+                        element: '#start-screen p',
                         popover: {
-                            title: 'The Interface',
-                            description: 'Read the math problem and use the on-screen keypad to submit your answer.',
-                            side: "top", align: 'start'
+                            title: 'The Challenge',
+                            description: 'Read the instructions carefully. Your response time is actively evaluated against your peers.',
+                            side: "bottom", align: 'start'
                         }
                     },
                     {
