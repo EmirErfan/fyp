@@ -309,7 +309,15 @@
             try {
                 // Request permissions immediately so recording captures the baseline!
                 faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "window" }, audio: false });
+                
+                await Swal.fire({
+                    title: 'Screen Recording Required',
+                    html: '<div style="text-align:left;">On the next prompt:<br><br>1. Select <b>Entire Screen</b> (or Chrome Tab)<br>2. <b>Click on the screen preview</b> to select it<br>3. Click the blue <b>Share</b> button</div>',
+                    icon: 'info',
+                    confirmButtonText: 'Got it!'
+                });
+
+                screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "monitor" }, audio: false });
 
                 faceVid.srcObject = faceStreamMain;
                 screenVid.srcObject = screenStreamMain;
