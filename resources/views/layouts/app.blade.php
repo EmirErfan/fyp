@@ -403,6 +403,7 @@
             .main-content { padding: 1.5rem; }
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
     @yield('styles')
 </head>
 <body>
@@ -416,18 +417,18 @@
         </a>
 
         <div class="nav-links">
-            <a href="/dashboard" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
+            <a href="/dashboard" id="nav-dashboard" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
                 <i class="fas fa-chart-pie"></i> Dashboard
             </a>
             <div class="nav-sep"></div>
-            <a href="/test-sessions" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}">
+            <a href="/test-sessions" id="nav-test" class="nav-link {{ Request::is('test-sessions*') ? 'active' : '' }}">
                 <i class="fas fa-vial"></i> Test
             </a>
-            <a href="/schedules" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}">
+            <a href="/schedules" id="nav-sessions" class="nav-link {{ Request::is('schedules*') ? 'active' : '' }}">
                 <i class="fas fa-calendar-alt"></i> Sessions
             </a>
             <div class="nav-sep"></div>
-            <a href="/participants" class="nav-link {{ Request::is('participants*') ? 'active' : '' }}">
+            <a href="/participants" id="nav-participants" class="nav-link {{ Request::is('participants*') ? 'active' : '' }}">
                 <i class="fas fa-users"></i> Participants
             </a>
             <a href="/export" class="nav-link {{ Request::is('export*') ? 'active' : '' }}">
@@ -445,6 +446,9 @@
         </div>
 
         <div class="nav-right">
+            <button id="nav-tutorial" onclick="startSystemTutorial()" style="background: var(--pink-soft); color: var(--pink-deep); border: none; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: 0.2s;">
+                <i class="fas fa-magic"></i> Tutorial
+            </button>
             <div class="profile-menu" onclick="toggleProfileMenu(event)">
                 <div class="profile-avatar" style="overflow: hidden;">
                     @if(auth()->check() && auth()->user()->profile_picture)
@@ -553,6 +557,60 @@
                 }, 4000);
             });
         });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <script>
+        function startSystemTutorial() {
+            const driver = window.driver.js.driver;
+            const tour = driver({
+                showProgress: true,
+                steps: [
+                    {
+                        element: '#nav-tutorial',
+                        popover: {
+                            title: 'Welcome to StressLab!',
+                            description: 'Let me show you how to register a participant and run a stress test step by step. You can restart this tour anytime by clicking this button.',
+                            side: "bottom", align: 'start'
+                        }
+                    },
+                    {
+                        element: '#nav-participants',
+                        popover: {
+                            title: 'Step 1: Register a Participant',
+                            description: 'Before you can run any tests, you need to register a subject. Click on the <b>Participants</b> tab to add their demographic and medical details.',
+                            side: "bottom", align: 'start'
+                        }
+                    },
+                    {
+                        element: '#nav-sessions',
+                        popover: {
+                            title: 'Step 2: Schedule a Session',
+                            description: 'Once your participant is registered, go to the <b>Sessions</b> tab. Here you can schedule an appointment for their stress test.',
+                            side: "bottom", align: 'start'
+                        }
+                    },
+                    {
+                        element: '#nav-test',
+                        popover: {
+                            title: 'Step 3: Run the Test',
+                            description: 'When it is time for the appointment, go to the <b>Test</b> tab. You can launch the TSST, MIST, or Stroop tests directly from here. The system will record their screen, face, and audio.',
+                            side: "bottom", align: 'start'
+                        }
+                    },
+                    {
+                        element: '#nav-dashboard',
+                        popover: {
+                            title: 'Step 4: View Results',
+                            description: 'Finally, head over to the <b>Dashboard</b>. Here you can view completed sessions, replay the recorded videos, and view the AI emotion analysis reports.',
+                            side: "bottom", align: 'start'
+                        }
+                    }
+                ]
+            });
+            
+            tour.drive();
+        }
     </script>
 </body>
 </html>
