@@ -286,7 +286,7 @@
         }
 
         async function startTest() {
-            document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
+            // document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
             try {
                 faceStreamMain = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 screenStreamMain = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "monitor" }, audio: false });

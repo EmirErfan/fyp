@@ -366,7 +366,7 @@
 
         // --- PREVIOUSLY startTest() ---
         function startMathTest() {
-            document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
+            // document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
             // Swap out the UI screens
             document.getElementById('rest-screen').classList.add('hidden');
             document.getElementById('test-area').classList.remove('hidden');

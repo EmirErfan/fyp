@@ -358,7 +358,7 @@
         }
 
         async function startTest() {
-            document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
+            // document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen Error:", err));
             try {
                 if (!navigator.mediaDevices) {
                     throw new Error("Your browser is blocking camera access. Ensure you are using http://127.0.0.1:8000");
