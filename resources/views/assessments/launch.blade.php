@@ -41,8 +41,10 @@
 
 <script>
     function openTestWindow() {
-        // 1. Open the dedicated test window
-        let testWindow = window.open('{{ $testUrl }}', 'TestEnvironment', 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
+        // 1. Open the dedicated test window (maximized)
+        let w = screen.availWidth;
+        let h = screen.availHeight;
+        let testWindow = window.open('{{ $testUrl }}', 'TestEnvironment', `width=${w},height=${h},left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`);
 
         // 2. Disable the launch button so they can't click it twice
         document.getElementById('launchBtn').disabled = true;
