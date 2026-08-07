@@ -221,7 +221,7 @@
                 try {
                     faceTracker = new tracking.ObjectTracker('face');
                     faceTracker.setInitialScale(4);
-                    faceTracker.setStepSize(2);
+                    faceTracker.setStepSize(4);
                     faceTracker.setEdgesDensity(0.1);
 
                     tracking.track('#faceVid', faceTracker);
@@ -356,8 +356,15 @@
             }, 1000);
         }
 
-        function drawDualFrame() {
+        let lastDrawTime = 0;
+        function drawDualFrame(timestamp) {
+            animationId = requestAnimationFrame(drawDualFrame);
+            
             if (!isPlaying) return;
+            
+            // Throttle rendering to ~30 FPS (33ms) to reduce CPU load and webcam lag
+            if (timestamp - lastDrawTime < 33) return;
+            lastDrawTime = timestamp;
 
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -378,8 +385,6 @@
             ctx.font = "bold 30px Arial";
             ctx.fillText("Participant Reaction", 50, 50);
             ctx.fillText("Task Interface", 1010, 50);
-
-            animationId = requestAnimationFrame(drawDualFrame);
         }
 
         function nextWord() {
@@ -515,9 +520,11 @@
             let accuracy = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(2) : 0;
             let avgReaction = reactionTimes.length > 0 ? (reactionTimes.reduce((a,b) => a+b, 0) / reactionTimes.length).toFixed(0) : 0;
             
-            formData.append('accuracy_rate', totalAttempts);
-            formData.append('total_error', correctAnswers);
-            formData.append('average_reaction_time', totalErrors);
+            formData.append('accuracy_rate', accuracy);
+            formData.append('total_error', totalErrors);
+            formData.append('total_attempts', totalAttempts);
+            formData.append('correct_answers', correctAnswers);
+            formData.append('average_reaction_time', avgReaction);
 
             fetch(`/test-sessions/${sessionId}/recordings`, { 
                 method: 'POST', 

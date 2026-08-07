@@ -281,7 +281,7 @@
                 try {
                     faceTracker = new tracking.ObjectTracker('face');
                     faceTracker.setInitialScale(4);
-                    faceTracker.setStepSize(2);
+                    faceTracker.setStepSize(4);
                     faceTracker.setEdgesDensity(0.1);
 
                     tracking.track('#faceVid', faceTracker);
@@ -439,8 +439,15 @@
         }
 
         // --- STITCHING LOGIC ---
-        function drawDualFrame() {
+        let lastDrawTime = 0;
+        function drawDualFrame(timestamp) {
+            animationId = requestAnimationFrame(drawDualFrame);
+            
             if (!isPlaying) return;
+            
+            // Throttle rendering to ~30 FPS (33ms) to reduce CPU load and webcam lag
+            if (timestamp - lastDrawTime < 33) return;
+            lastDrawTime = timestamp;
 
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -461,8 +468,6 @@
             ctx.font = "bold 30px Arial";
             ctx.fillText("Participant Reaction", 50, 50);
             ctx.fillText("Task Interface", 1010, 50);
-
-            animationId = requestAnimationFrame(drawDualFrame);
         }
 
         function checkAnswer() {

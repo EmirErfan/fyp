@@ -172,6 +172,8 @@ class TestSessionController extends Controller
                 'accuracy_rate' => $request->input('accuracy_rate', 0),
                 'total_error' => $request->input('total_error') ?? $request->input('total_errors') ?? 0,
                 'average_reaction_time' => $request->input('average_reaction_time', 0),
+                'total_attempts' => $request->input('total_attempts', 0),
+                'correct_answers' => $request->input('correct_answers', 0),
                 'face_video_path' => $facePath,
                 'screen_video_path' => $screenPath,
             ]
