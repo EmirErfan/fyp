@@ -329,9 +329,9 @@
                     const audioTrack = faceStreamMain.getAudioTracks()[0];
                     if (audioTrack) combinedStream.addTrack(audioTrack);
 
-                    let options = { mimeType: 'video/webm; codecs=vp8,opus' };
+                    let options = { mimeType: 'video/webm; codecs=vp8,opus', videoBitsPerSecond: 250000 };
                     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                        options = { mimeType: 'video/webm' }; 
+                        options = { mimeType: 'video/webm', videoBitsPerSecond: 250000 }; 
                     }
 
                     combinedRecorder = new MediaRecorder(combinedStream, options);
