@@ -74,7 +74,7 @@ class ParticipantController extends Controller
             'dob' => $request->dob, 
             'gender' => $request->gender,
             'date_joined' => now()->toDateString(),
-            'user_id' => auth()->user()->role === 'admin' ? ($request->user_id ?? $request->researcher_id) : auth()->id(),
+            'user_id' => auth()->id(),
             'team_id' => auth()->user()->team_id,
             'email' => $request->email,
             'phone' => $request->phone,
