@@ -40,7 +40,7 @@ This project uses Laravel Sail for a seamless Docker development environment. En
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/EmirErfan/stress-system.git
+git clone https://github.com/EmirErfan/fyp.git
 cd stress-system
 ```
 
